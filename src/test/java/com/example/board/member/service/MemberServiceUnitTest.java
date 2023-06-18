@@ -1,6 +1,7 @@
 package com.example.board.member.service;
 
 import com.example.board.common.ServiceResult;
+import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.Status;
@@ -55,6 +56,81 @@ class MemberServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("이미 존재하는 이메일입니다.")
+        );
+    }
+
+    @Test
+    void loginSuccessTest() {
+        ServiceResult result = memberService.login(MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void loginFailByEmailTest() {
+        ServiceResult result = memberService.login(MemberLogin.builder()
+                .email("test142")
+                .password("1234")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void loginFailByStatus1Test() {
+        memberService.login(MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+
+        ServiceResult result = memberService.login(MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("이미 로그인상태이므로 로그아웃합니다.")
+        );
+    }
+
+    @Test
+    void loginFailByStatus2Test() {
+        memberRepository.save(Member.builder()
+                .email("test4321")
+                .password(PasswordUtils.doEncryption("1234"))
+                .name("홍길동")
+                .status(Status.DELETED)
+                .regDate(LocalDateTime.now())
+                .deleteDate(null)
+                .build());
+
+        ServiceResult result = memberService.login(MemberLogin.builder()
+                .email("test4321")
+                .password("1234")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 계정입니다.")
+        );
+    }
+
+    @Test
+    void loginFailByPasswordTest() {
+        ServiceResult result = memberService.login(MemberLogin.builder()
+                .email("test1234")
+                .password("12345")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
         );
     }
 }
