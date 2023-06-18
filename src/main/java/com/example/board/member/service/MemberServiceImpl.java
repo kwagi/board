@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberDelete;
+import com.example.board.member.dto.MemberEditInfo;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
@@ -132,5 +133,23 @@ public final class MemberServiceImpl implements MemberService {
         }
         Member member = optionalMember.get();
         return ServiceResult.success(JwtUtils.createToken(member));
+    }
+
+    @Override
+    public ServiceResult editPassword(MemberEditInfo memberEditInfo) {
+        Optional<Member> optionalMember = memberRepository.findByEmail(memberEditInfo.getCurEmail());
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("계정이 존재하지않습니다.");
+        }
+        Member member = optionalMember.get();
+        if (member.getStatus().equals(Status.DELETED)) {
+            return ServiceResult.fail("삭제된 계정입니다.");
+        }
+        if (PasswordUtils.isNotEqual(memberEditInfo.getCurPassword(), member.getPassword())) {
+            return ServiceResult.fail("비밀번호가 일치하지않습니다.");
+        }
+        member.setPassword(PasswordUtils.doEncryption(memberEditInfo.getChangedPassword()));
+        memberRepository.save(member);
+        return ServiceResult.success();
     }
 }

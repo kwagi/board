@@ -3,6 +3,7 @@ package com.example.board.member.service;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberDelete;
+import com.example.board.member.dto.MemberEditInfo;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
@@ -10,20 +11,21 @@ import com.example.board.member.enums.Status;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MemberServiceUnitTest {
     private final MemberRepository memberRepository = new MemberRepositoryStub();
     private final MemberService    memberService    = new MemberServiceImpl(memberRepository);
+    private       String           token;
 
     @BeforeEach
     void setUp() {
@@ -71,6 +73,7 @@ class MemberServiceUnitTest {
                 .password("1234")
                 .build());
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+        this.token = result.getData().toString();
     }
 
     @Test
@@ -139,18 +142,10 @@ class MemberServiceUnitTest {
         );
     }
 
-    /**
-     * 토큰만료시간때문에 실패할수있음.
-     */
     @Test()
     void logoutSuccessTest() {
-        String        token  = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg3MDgzODI5fQ.vK6BLqEcC4JLxsFWB71U2N-SGrBAbGewcqSnOmN5jNi0pU9RpB7Ak1YKfsLIFc7ZdzhUfanjAr7zEB-EHUfnqg";
-        ServiceResult result = memberService.logout(token);
+        ServiceResult result = memberService.logout(this.token);
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
-//        Assertions.assertThrows(
-//                TokenExpiredException.class,
-//                () -> memberService.logout(token)
-//        );
     }
 
     @Test
@@ -188,6 +183,7 @@ class MemberServiceUnitTest {
         );
     }
 
+    @Test
     void deleteSuccessTest() {
         ServiceResult result = memberService.delete(MemberDelete.builder()
                 .email("test1234")
@@ -269,6 +265,64 @@ class MemberServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("해당 이메일 정보가 없습니다.")
+        );
+    }
+
+    @Test
+    void editPasswordSuccessTest() {
+        ServiceResult result = memberService.editPassword(MemberEditInfo.builder()
+                .curEmail("test1234")
+                .curPassword("1234")
+                .changedPassword("4321")
+                .build());
+
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void editPasswordFailByEmailTest() {
+        ServiceResult result = memberService.editPassword(MemberEditInfo.builder()
+                .curEmail("test144434")
+                .curPassword("1234")
+                .changedPassword("4321")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("계정이 존재하지않습니다.")
+        );
+    }
+
+    @Test
+    void editPasswordFailByStatusTest() {
+        Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
+        Member           member         = optionalMember.get();
+        member.setStatus(Status.DELETED);
+        memberRepository.save(member);
+
+        ServiceResult result = memberService.editPassword(MemberEditInfo.builder()
+                .curEmail("test1234")
+                .curPassword("1234")
+                .changedPassword("4321")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 계정입니다.")
+        );
+    }
+
+    @Test
+    void editPasswordFailByPasswordTest() {
+        ServiceResult result = memberService.editPassword(MemberEditInfo.builder()
+                .curEmail("test1234")
+                .curPassword("123566")
+                .changedPassword("4321")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
         );
     }
 }

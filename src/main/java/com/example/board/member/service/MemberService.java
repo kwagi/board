@@ -2,6 +2,7 @@ package com.example.board.member.service;
 
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberDelete;
+import com.example.board.member.dto.MemberEditInfo;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 
@@ -30,4 +31,9 @@ public interface MemberService {
      * 토큰재발급
      */
     ServiceResult refresh(String token);
+
+    /**
+     * 비번바꿈
+     */
+    ServiceResult editPassword(MemberEditInfo memberEditInfo);
 }
