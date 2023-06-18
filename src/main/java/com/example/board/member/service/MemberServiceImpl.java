@@ -111,4 +111,26 @@ public final class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
         return ServiceResult.success("탈퇴성공");
     }
+
+    @Override
+    public ServiceResult refresh(String token) {
+        if (token == null || token.isBlank()) {
+            return ServiceResult.fail("토큰 정보가 없습니다.");
+        }
+        String issuer;
+
+        try {
+            JwtUtils.getIssuer(token);
+        } catch (SignatureVerificationException | JWTDecodeException e) {
+            return ServiceResult.fail("토큰 정보가 잘못되었습니다.");
+        }
+
+        issuer = JwtUtils.getIssuer(token);
+        Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("해당 이메일 정보가 없습니다.");
+        }
+        Member member = optionalMember.get();
+        return ServiceResult.success(JwtUtils.createToken(member));
+    }
 }

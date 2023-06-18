@@ -25,4 +25,9 @@ public interface MemberService {
      * 회원탈퇴
      */
     ServiceResult delete(MemberDelete memberDelete);
+
+    /**
+     * 토큰재발급
+     */
+    ServiceResult refresh(String token);
 }

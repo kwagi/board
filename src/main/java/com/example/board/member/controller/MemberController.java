@@ -41,4 +41,10 @@ public final class MemberController {
         ServiceResult result = memberService.delete(memberDelete);
         return ResponseResult.result(result);
     }
+
+    @PostMapping("/api/member/refresh")
+    public ResponseEntity<?> delete(@RequestHeader(name = "TOKEN") String token) {
+        ServiceResult result = memberService.refresh(token);
+        return ResponseResult.result(result);
+    }
 }

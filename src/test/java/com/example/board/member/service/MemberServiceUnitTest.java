@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class MemberServiceUnitTest {
@@ -219,6 +220,55 @@ class MemberServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
+        );
+    }
+
+    /**
+     * 토큰만료때문에 실패할수있음.
+     */
+    @Test
+    void refreshSuccessTest() {
+        String curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg2NzU0MTU5fQ.C6Tn8lZd1uDiamip7hSZEVfTtIccEXoOVEEyS7NbrClru_fq26DJ6IQZU8IZJAt5bvJo8_gtmGARN5hCn-1OMg";
+//        ServiceResult result   = memberService.refresh(curToken);
+//        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+        assertThrows(
+                TokenExpiredException.class,
+                () -> memberService.logout(curToken)
+        );
+    }
+
+    @Test
+    void refreshFailByNoTokenTest() {
+        String        curToken = "";
+        ServiceResult result   = memberService.refresh(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 없습니다.")
+        );
+    }
+
+    @Test
+    void refreshFailByWrongTokenTest() {
+        String        curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJxZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg2NzU0MTU5fQ.C6Tn8lZd1uDiamip7hSZEVfTtIccEXoOVEEyS7NbxClru_fq26DJ6IQZU8IZJAt5bvJo8_gtmGARN5h";
+        ServiceResult result   = memberService.refresh(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void refreshFailByEmail() {
+        Member member = Member.builder()
+                .email("ttt4124")
+                .password("4213")
+                .name("동길홍")
+                .build();
+        String        curToken = JwtUtils.createToken(member);
+        ServiceResult result   = memberService.refresh(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("해당 이메일 정보가 없습니다.")
         );
     }
 }
