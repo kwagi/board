@@ -28,4 +28,10 @@ public final class MemberController {
         ServiceResult result = memberService.login(memberLogin);
         return ResponseResult.result(result);
     }
+
+    @PostMapping("/api/member/logout")
+    public ResponseEntity<?> logout(@RequestHeader(name = "TOKEN") String token) {
+        ServiceResult result = memberService.logout(token);
+        return ResponseResult.result(result);
+    }
 }

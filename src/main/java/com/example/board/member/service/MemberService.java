@@ -14,4 +14,9 @@ public interface MemberService {
      * 로그인
      */
     ServiceResult login(MemberLogin memberLogin);
+
+    /**
+     * 로그아웃
+     */
+    ServiceResult logout(String token);
 }

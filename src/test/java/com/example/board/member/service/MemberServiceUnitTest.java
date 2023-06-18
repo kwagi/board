@@ -6,6 +6,7 @@ import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.Status;
 import com.example.board.member.repository.MemberRepository;
+import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -131,6 +132,51 @@ class MemberServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
+        );
+    }
+
+    /**
+     * 토큰만료시간때문에 실패할수있음.
+     */
+    @Test
+    void logoutSuccessTest() {
+        String        token  = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg3MDgzODI5fQ.vK6BLqEcC4JLxsFWB71U2N-SGrBAbGewcqSnOmN5jNi0pU9RpB7Ak1YKfsLIFc7ZdzhUfanjAr7zEB-EHUfnqg";
+        ServiceResult result = memberService.logout(token);
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void logoutFailByNoTokenTest() {
+        String        token  = "";
+        ServiceResult result = memberService.logout(token);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 없습니다.")
+        );
+    }
+
+    @Test
+    void logoutFailByWrongTokenTest() {
+        String        curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJxZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg2NzU0MTU5fQ.C6Tn8lZd1uDiamip7hSZEVfTtIccEXoOVEEyS7NbxClru_fq26DJ6IQZU8IZJAt5bvJo8_gtmGARN5h";
+        ServiceResult result   = memberService.logout(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void logoutFailByEmail() {
+        Member member = Member.builder()
+                .email("ttt4124")
+                .password("4213")
+                .name("동길홍")
+                .build();
+        String        curToken = JwtUtils.createToken(member);
+        ServiceResult result   = memberService.logout(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("해당 이메일 정보가 없습니다.")
         );
     }
 }
