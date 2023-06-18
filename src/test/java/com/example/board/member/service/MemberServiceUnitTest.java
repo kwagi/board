@@ -30,7 +30,7 @@ class MemberServiceUnitTest {
     @BeforeEach
     void setUp() {
         // 회원가입시 초기상태
-        memberRepository.save(Member.builder()
+        Member member = Member.builder()
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
@@ -38,7 +38,9 @@ class MemberServiceUnitTest {
                 .regDate(LocalDateTime.now())
                 .deleteDate(null)
                 .recentDate(null)
-                .build());
+                .build();
+        memberRepository.save(member);
+        token = JwtUtils.createToken(member);
     }
 
     @Test
@@ -73,7 +75,6 @@ class MemberServiceUnitTest {
                 .password("1234")
                 .build());
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
-        this.token = result.getData().toString();
     }
 
     @Test
@@ -219,18 +220,10 @@ class MemberServiceUnitTest {
         );
     }
 
-    /**
-     * 토큰만료때문에 실패할수있음.
-     */
     @Test
     void refreshSuccessTest() {
-        String curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg2NzU0MTU5fQ.C6Tn8lZd1uDiamip7hSZEVfTtIccEXoOVEEyS7NbrClru_fq26DJ6IQZU8IZJAt5bvJo8_gtmGARN5hCn-1OMg";
-//        ServiceResult result   = memberService.refresh(curToken);
-//        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
-        assertThrows(
-                TokenExpiredException.class,
-                () -> memberService.logout(curToken)
-        );
+        ServiceResult result = memberService.refresh(this.token);
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
