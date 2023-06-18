@@ -2,6 +2,7 @@ package com.example.board.member.controller;
 
 import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
+import com.example.board.member.dto.MemberDelete;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.service.MemberService;
@@ -32,6 +33,12 @@ public final class MemberController {
     @PostMapping("/api/member/logout")
     public ResponseEntity<?> logout(@RequestHeader(name = "TOKEN") String token) {
         ServiceResult result = memberService.logout(token);
+        return ResponseResult.result(result);
+    }
+
+    @PostMapping("/api/member/delete")
+    public ResponseEntity<?> delete(@RequestBody MemberDelete memberDelete) {
+        ServiceResult result = memberService.delete(memberDelete);
         return ResponseResult.result(result);
     }
 }

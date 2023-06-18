@@ -3,6 +3,7 @@ package com.example.board.member.service;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.example.board.common.ServiceResult;
+import com.example.board.member.dto.MemberDelete;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
@@ -93,5 +94,21 @@ public final class MemberServiceImpl implements MemberService {
         member.setStatus(Status.LOGOUT);
         memberRepository.save(member);
         return ServiceResult.success();
+    }
+
+    @Override
+    public ServiceResult delete(MemberDelete memberDelete) {
+        Optional<Member> optionalMember = memberRepository.findByEmail(memberDelete.getEmail());
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("이메일이 올바르지않습니다.");
+        }
+        Member member = optionalMember.get();
+        if (PasswordUtils.isNotEqual(memberDelete.getPassword(), member.getPassword())) {
+            return ServiceResult.fail("비밀번호가 일치하지않습니다.");
+        }
+        member.setStatus(Status.DELETED);
+        member.setDeleteDate(LocalDateTime.now());
+        memberRepository.save(member);
+        return ServiceResult.success("탈퇴성공");
     }
 }
