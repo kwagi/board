@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table(name = "member")
+@Table(name = "member", uniqueConstraints = {@UniqueConstraint(columnNames = {"email"})})
 public final class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

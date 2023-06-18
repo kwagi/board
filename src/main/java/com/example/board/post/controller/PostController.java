@@ -6,6 +6,7 @@ import com.example.board.post.dto.DoPostingModel;
 import com.example.board.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,12 @@ public class PostController {
     @PostMapping("/api/post/do-posting")
     public ResponseEntity<?> doPosting(@RequestBody DoPostingModel doPostingModel) {
         ServiceResult result = postService.doPosting(doPostingModel);
+        return ResponseResult.result(result);
+    }
+
+    @PostMapping("/api/post/click-post/{id}")
+    public ResponseEntity<?> clickPost(@PathVariable Long id) {
+        ServiceResult result = postService.clickPost(id);
         return ResponseResult.result(result);
     }
 }

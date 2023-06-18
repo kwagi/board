@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static com.example.board.post.enums.Status.*;
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -47,5 +49,20 @@ public class PostServiceImpl implements PostService {
                 .build();
         postRepository.save(post);
         return ServiceResult.success(post);
+    }
+
+    @Override
+    public ServiceResult clickPost(Long id) {
+        Optional<Post> optionalPost = postRepository.findById(id);
+        if (optionalPost.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 게시글입니다.");
+        }
+        Post post = optionalPost.get();
+        if (post.getStatus().equals(DELETED)) {
+            return ServiceResult.fail("삭제된 게시글입니다.");
+        }
+        post.setHits(post.getHits() + 1);
+        postRepository.save(post);
+        return ServiceResult.success();
     }
 }
