@@ -1,13 +1,10 @@
 package com.example.board.member.entity;
 
-import com.example.board.member.enums.Status;
-import com.example.board.post.entity.Post;
+import com.example.board.member.enums.MemberStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -25,11 +22,8 @@ public final class Member {
     private String        password;
     private String        name;
     @Enumerated(value = EnumType.STRING)
-    private Status        status;
+    private MemberStatus  memberStatus;
     private LocalDateTime regDate;
     private LocalDateTime deleteDate;
     private LocalDateTime recentDate;
-    @OneToMany(mappedBy = "member")
-    @Builder.Default
-    private List<Post>    posts = new ArrayList<>();
 }

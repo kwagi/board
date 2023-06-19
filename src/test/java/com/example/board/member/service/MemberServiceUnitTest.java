@@ -1,13 +1,12 @@
 package com.example.board.member.service;
 
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberDelete;
 import com.example.board.member.dto.MemberEditInfo;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
-import com.example.board.member.enums.Status;
+import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
@@ -34,7 +33,7 @@ class MemberServiceUnitTest {
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
-                .status(Status.LOGOUT)
+                .memberStatus(MemberStatus.LOGOUT)
                 .regDate(LocalDateTime.now())
                 .deleteDate(null)
                 .recentDate(null)
@@ -114,7 +113,7 @@ class MemberServiceUnitTest {
                 .email("test4321")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
-                .status(Status.DELETED)
+                .memberStatus(MemberStatus.DELETED)
                 .regDate(LocalDateTime.now())
                 .deleteDate(null)
                 .build());
@@ -290,7 +289,7 @@ class MemberServiceUnitTest {
     void editPasswordFailByStatusTest() {
         Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
         Member           member         = optionalMember.get();
-        member.setStatus(Status.DELETED);
+        member.setMemberStatus(MemberStatus.DELETED);
         memberRepository.save(member);
 
         ServiceResult result = memberService.editPassword(MemberEditInfo.builder()

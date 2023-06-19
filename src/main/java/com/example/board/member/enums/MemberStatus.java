@@ -1,6 +1,6 @@
 package com.example.board.member.enums;
 
-public enum Status {
+public enum MemberStatus {
     LOGIN,
     LOGOUT,
     DELETED,

@@ -1,6 +1,6 @@
 package com.example.board.post.enums;
 
-public enum Status {
+public enum PostStatus {
     ALL,
     LOGIN_ONLY,
     DELETED

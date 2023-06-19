@@ -1,7 +1,6 @@
 package com.example.board.post.entity;
 
-import com.example.board.member.entity.Member;
-import com.example.board.post.enums.Status;
+import com.example.board.post.enums.PostStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,15 +18,13 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
     private Long          id;
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member        member;
     // poster 는 member 이메일
     private String        poster;
     private String        title;
-    private String        contents;
-    private Status        status;
-    private long          hits;
+    private String     contents;
+    @Enumerated(EnumType.STRING)
+    private PostStatus postStatus;
+    private long       hits;
     private long          likes;
     private LocalDateTime writtenDate;
 }

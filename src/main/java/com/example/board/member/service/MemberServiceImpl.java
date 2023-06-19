@@ -8,7 +8,7 @@ import com.example.board.member.dto.MemberEditInfo;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.dto.MemberRegister;
 import com.example.board.member.entity.Member;
-import com.example.board.member.enums.Status;
+import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
@@ -34,7 +34,7 @@ public final class MemberServiceImpl implements MemberService {
                 .email(memberRegister.getEmail())
                 .password(PasswordUtils.doEncryption(memberRegister.getPassword()))
                 .name(memberRegister.getName())
-                .status(Status.LOGOUT)
+                .memberStatus(MemberStatus.LOGOUT)
                 .regDate(LocalDateTime.now())
                 .deleteDate(null)
                 .recentDate(null)
@@ -52,13 +52,13 @@ public final class MemberServiceImpl implements MemberService {
         }
         Member member = optionalMember.get();
 
-        if (member.getStatus().equals(Status.LOGIN)) {
-            member.setStatus(Status.LOGOUT);
+        if (member.getMemberStatus().equals(MemberStatus.LOGIN)) {
+            member.setMemberStatus(MemberStatus.LOGOUT);
             memberRepository.save(member);
             return ServiceResult.fail("이미 로그인상태이므로 로그아웃합니다.");
         }
-        if (member.getStatus().equals(Status.DELETED)) {
-            member.setStatus(Status.LOGOUT);
+        if (member.getMemberStatus().equals(MemberStatus.DELETED)) {
+            member.setMemberStatus(MemberStatus.LOGOUT);
             memberRepository.save(member);
             return ServiceResult.fail("삭제된 계정입니다.");
         }
@@ -66,7 +66,7 @@ public final class MemberServiceImpl implements MemberService {
             return ServiceResult.fail("비밀번호가 일치하지않습니다.");
         }
         String token = JwtUtils.createToken(member);
-        member.setStatus(Status.LOGIN);
+        member.setMemberStatus(MemberStatus.LOGIN);
         member.setRecentDate(LocalDateTime.now());
         memberRepository.save(member);
 
@@ -92,7 +92,7 @@ public final class MemberServiceImpl implements MemberService {
             return ServiceResult.fail("해당 이메일 정보가 없습니다.");
         }
         Member member = optionalMember.get();
-        member.setStatus(Status.LOGOUT);
+        member.setMemberStatus(MemberStatus.LOGOUT);
         memberRepository.save(member);
         return ServiceResult.success();
     }
@@ -107,7 +107,7 @@ public final class MemberServiceImpl implements MemberService {
         if (PasswordUtils.isNotEqual(memberDelete.getPassword(), member.getPassword())) {
             return ServiceResult.fail("비밀번호가 일치하지않습니다.");
         }
-        member.setStatus(Status.DELETED);
+        member.setMemberStatus(MemberStatus.DELETED);
         member.setDeleteDate(LocalDateTime.now());
         memberRepository.save(member);
         return ServiceResult.success("탈퇴성공");
@@ -142,7 +142,7 @@ public final class MemberServiceImpl implements MemberService {
             return ServiceResult.fail("계정이 존재하지않습니다.");
         }
         Member member = optionalMember.get();
-        if (member.getStatus().equals(Status.DELETED)) {
+        if (member.getMemberStatus().equals(MemberStatus.DELETED)) {
             return ServiceResult.fail("삭제된 계정입니다.");
         }
         if (PasswordUtils.isNotEqual(memberEditInfo.getCurPassword(), member.getPassword())) {

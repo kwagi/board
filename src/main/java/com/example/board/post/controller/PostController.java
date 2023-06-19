@@ -2,6 +2,7 @@ package com.example.board.post.controller;
 
 import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
+import com.example.board.member.dto.MemberLogin;
 import com.example.board.post.dto.DoPostingModel;
 import com.example.board.post.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,12 @@ public class PostController {
     @PostMapping("/api/post/click-post/{id}")
     public ResponseEntity<?> clickPost(@PathVariable Long id) {
         ServiceResult result = postService.clickPost(id);
+        return ResponseResult.result(result);
+    }
+
+    @PostMapping("/api/post/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, @RequestBody MemberLogin memberLogin) {
+        ServiceResult result = postService.delete(id, memberLogin);
         return ResponseResult.result(result);
     }
 }

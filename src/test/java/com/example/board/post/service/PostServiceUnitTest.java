@@ -1,8 +1,9 @@
 package com.example.board.post.service;
 
 import com.example.board.common.ServiceResult;
+import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
-import com.example.board.member.enums.Status;
+import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.member.service.MemberRepositoryStub;
 import com.example.board.post.dto.DoPostingModel;
@@ -16,8 +17,8 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static com.example.board.post.enums.Status.ALL;
-import static com.example.board.post.enums.Status.DELETED;
+import static com.example.board.post.enums.PostStatus.ALL;
+import static com.example.board.post.enums.PostStatus.DELETED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -33,7 +34,7 @@ class PostServiceUnitTest {
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
-                .status(Status.LOGOUT)
+                .memberStatus(MemberStatus.LOGOUT)
                 .regDate(LocalDateTime.now())
                 .deleteDate(null)
                 .recentDate(null)
@@ -45,7 +46,7 @@ class PostServiceUnitTest {
                 .poster("test1234")
                 .title("제목")
                 .contents("내용")
-                .status(ALL)
+                .postStatus(ALL)
                 .hits(0)
                 .likes(0)
                 .writtenDate(LocalDateTime.now())
@@ -59,7 +60,7 @@ class PostServiceUnitTest {
                 .title("제목")
                 .contents("내용")
                 .poster("test1234")
-                .status(ALL)
+                .postStatus(ALL)
                 .build());
 
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
@@ -71,7 +72,7 @@ class PostServiceUnitTest {
                 .title("제목")
                 .contents("내용")
                 .poster("gjasdg1424")
-                .status(ALL)
+                .postStatus(ALL)
                 .build());
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -82,14 +83,14 @@ class PostServiceUnitTest {
     @Test
     void doPostingFailByMemberStatusTest() {
         Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
-        optionalMember.get().setStatus(Status.DELETED);
+        optionalMember.get().setMemberStatus(MemberStatus.DELETED);
         memberRepository.save(optionalMember.get());
 
         ServiceResult result = postService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .contents("내용")
                 .poster("test1234")
-                .status(ALL)
+                .postStatus(ALL)
                 .build());
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -102,7 +103,7 @@ class PostServiceUnitTest {
         ServiceResult result = postService.doPosting(DoPostingModel.builder()
                 .contents("내용")
                 .poster("test1234")
-                .status(ALL)
+                .postStatus(ALL)
                 .build());
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -115,7 +116,7 @@ class PostServiceUnitTest {
         ServiceResult result = postService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .poster("test1234")
-                .status(ALL)
+                .postStatus(ALL)
                 .build());
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -142,13 +143,113 @@ class PostServiceUnitTest {
     void clickPostFailByDeletedTest() {
         Optional<Post> optionalPost = postRepository.findById(1L);
         Post           post         = optionalPost.get();
-        post.setStatus(DELETED);
+        post.setPostStatus(DELETED);
         postRepository.save(post);
 
         ServiceResult result = postService.clickPost(1L);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("삭제된 게시글입니다.")
+        );
+    }
+
+    @Test
+    void deleteSuccessTest() {
+        ServiceResult result = postService.delete(1L, MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void deleteFailByPostTest() {
+        ServiceResult result = postService.delete(3L, MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 게시글입니다.")
+        );
+    }
+
+    @Test
+    void deleteFailByDeletedPostTest() {
+        Optional<Post> optionalPost = postRepository.findById(1L);
+        Post           post         = optionalPost.get();
+        post.setPostStatus(DELETED);
+        postRepository.save(post);
+
+        ServiceResult result = postService.delete(1L, MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 게시글입니다.")
+        );
+    }
+
+    @Test
+    void deleteFailByMemberTest() {
+        ServiceResult result = postService.delete(1L, MemberLogin.builder()
+                .email("test15123123")
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void deleteFailByMatchPosterTest() {
+        postRepository.save(Post.builder()
+                .id(2L)
+                .poster("asdg1412")
+                .title("제목")
+                .contents("124")
+                .likes(0)
+                .hits(0)
+                .postStatus(ALL)
+                .build());
+
+        ServiceResult result = postService.delete(2L, MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("작성자가 다릅니다.")
+        );
+    }
+
+    @Test
+    void deleteFailByDeletedMemberTest() {
+        Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
+        optionalMember.get().setMemberStatus(MemberStatus.DELETED);
+        memberRepository.save(optionalMember.get());
+
+        ServiceResult result = postService.delete(1L, MemberLogin.builder()
+                .email("test1234")
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 계정입니다.")
+        );
+    }
+
+    @Test
+    void deleteFailByPasswordTest() {
+        ServiceResult result = postService.delete(1L, MemberLogin.builder()
+                .email("test1234")
+                .password("54321")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
         );
     }
 }
