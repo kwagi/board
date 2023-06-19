@@ -22,7 +22,7 @@ public class JwtUtils {
         return JWT.create()
                 .withIssuer(member.getEmail())
                 .withSubject("verifying" + member.getName())
-                .withClaim(claimMemberId, member.getId())
+                .withClaim(claimMemberId, member.getMemberId())
                 .withExpiresAt(expiredDate)
                 .sign(Algorithm.HMAC512(key.getBytes(StandardCharsets.UTF_8)));
     }

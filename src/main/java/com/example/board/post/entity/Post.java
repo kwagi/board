@@ -17,14 +17,13 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
-    private Long          id;
-    // poster 는 member 이메일
+    private Long          postId;
     private String        poster;
     private String        title;
-    private String     contents;
+    private String        contents;
     @Enumerated(EnumType.STRING)
-    private PostStatus postStatus;
-    private long       hits;
+    private PostStatus    postStatus;
+    private long          hits;
     private long          likes;
     private LocalDateTime writtenDate;
 }

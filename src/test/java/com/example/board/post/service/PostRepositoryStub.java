@@ -98,20 +98,20 @@ public class PostRepositoryStub implements PostRepository {
 
     @Override
     public <S extends Post> S save(S entity) {
-        if (postTable.size() == 0 || entity.getId() == null) {
-            entity.setId(postTable.size() + 1L);
+        if (postTable.size() == 0 || entity.getPostId() == null) {
+            entity.setPostId(postTable.size() + 1L);
             postTable.add(Optional.of(entity));
             return null;
         }
 
         for (Optional<Post> optionalPost : postTable) {
-            if (entity.getId().equals(optionalPost.get().getId())) {
+            if (entity.getPostId().equals(optionalPost.get().getPostId())) {
                 int idx = postTable.indexOf(optionalPost);
                 postTable.set(idx, Optional.of(entity));
                 return null;
             }
         }
-        entity.setId(postTable.size() + 1L);
+        entity.setPostId(postTable.size() + 1L);
         postTable.add(Optional.of(entity));
         return null;
     }
@@ -124,7 +124,7 @@ public class PostRepositoryStub implements PostRepository {
     @Override
     public Optional<Post> findById(Long aLong) {
         for (Optional<Post> optionalPost : postTable) {
-            if (optionalPost.get().getId().equals(aLong)) {
+            if (optionalPost.get().getPostId().equals(aLong)) {
                 return optionalPost;
             }
         }

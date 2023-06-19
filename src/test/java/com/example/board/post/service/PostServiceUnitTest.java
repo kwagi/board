@@ -8,7 +8,10 @@ import com.example.board.member.repository.MemberRepository;
 import com.example.board.member.service.MemberRepositoryStub;
 import com.example.board.post.dto.DoPostingModel;
 import com.example.board.post.entity.Post;
+import com.example.board.post.entity.PostLikes;
+import com.example.board.post.repository.PostLikesRepository;
 import com.example.board.post.repository.PostRepository;
+import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,14 +26,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class PostServiceUnitTest {
-    private final PostRepository   postRepository   = new PostRepositoryStub();
-    private final MemberRepository memberRepository = new MemberRepositoryStub();
-    private final PostService      postService      = new PostServiceImpl(postRepository, memberRepository);
+    private final PostRepository      postRepository      = new PostRepositoryStub();
+    private final MemberRepository    memberRepository    = new MemberRepositoryStub();
+    private final PostLikesRepository postLikesRepository = new PostLikesRepositoryStub();
+    private final PostService         postService         = new PostServiceImpl(postRepository, memberRepository, postLikesRepository);
+    private       Member              member;
+    private       Post                post;
+    private       String              token;
 
     @BeforeEach
     void setUp() {
         // 회원가입시 초기상태
-        Member member = Member.builder()
+        member = Member.builder()
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
@@ -40,9 +47,10 @@ class PostServiceUnitTest {
                 .recentDate(null)
                 .build();
         memberRepository.save(member);
+        token = JwtUtils.createToken(member);
 
-        Post post = Post.builder()
-                .id(1L)
+        post = Post.builder()
+                .postId(1L)
                 .poster("test1234")
                 .title("제목")
                 .contents("내용")
@@ -204,9 +212,9 @@ class PostServiceUnitTest {
     }
 
     @Test
-    void deleteFailByMatchPosterTest() {
+    void deleteFailByUnMatchPosterTest() {
         postRepository.save(Post.builder()
-                .id(2L)
+                .postId(2L)
                 .poster("asdg1412")
                 .title("제목")
                 .contents("124")
@@ -250,6 +258,64 @@ class PostServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
+        );
+    }
+
+    @Test
+    void clickLikesSuccessTest() {
+        ServiceResult result = postService.clickLikes(1L, token);
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void clickLikesFailByPostTest() {
+        ServiceResult result = postService.clickLikes(2L, token);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 게시글입니다.")
+        );
+    }
+
+    @Test
+    void clickLikesFailByDeletedPostTest() {
+        Optional<Post> optionalPost = postRepository.findById(1L);
+        Post           post         = optionalPost.get();
+        post.setPostStatus(DELETED);
+        postRepository.save(post);
+
+        ServiceResult result = postService.clickLikes(1L, token);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 게시글입니다.")
+        );
+    }
+
+    @Test
+    void clickLikesFailByMemberTest() {
+        String newToken = JwtUtils.createToken(Member.builder()
+                .email("aaaa444")
+                .password("14214")
+                .memberStatus(MemberStatus.LOGOUT)
+                .build());
+
+        ServiceResult result = postService.clickLikes(1L, newToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void clickLikesFailByAlreadyLikesTest() {
+        postLikesRepository.save(PostLikes.builder()
+                .member(member)
+                .post(post)
+                .build());
+
+        ServiceResult result = postService.clickLikes(1L, token);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("이미 좋아요한 계정입니다.")
         );
     }
 }

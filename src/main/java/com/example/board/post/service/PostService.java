@@ -19,4 +19,9 @@ public interface PostService {
      * 게시글 삭제
      */
     ServiceResult delete(Long id, MemberLogin memberLogin);
+
+    /**
+     * 좋아요 누르기
+     */
+    ServiceResult clickLikes(Long id, String token);
 }

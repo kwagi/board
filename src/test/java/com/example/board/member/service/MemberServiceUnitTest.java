@@ -19,17 +19,17 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MemberServiceUnitTest {
     private final MemberRepository memberRepository = new MemberRepositoryStub();
     private final MemberService    memberService    = new MemberServiceImpl(memberRepository);
+    private       Member           member;
     private       String           token;
 
     @BeforeEach
     void setUp() {
         // 회원가입시 초기상태
-        Member member = Member.builder()
+        member = Member.builder()
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
                 .name("홍길동")
