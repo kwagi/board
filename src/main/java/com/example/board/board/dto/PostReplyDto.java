@@ -1,4 +1,4 @@
-package com.example.board.post.dto;
+package com.example.board.board.dto;
 
 import lombok.*;
 

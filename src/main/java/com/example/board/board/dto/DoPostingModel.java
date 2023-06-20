@@ -1,6 +1,6 @@
-package com.example.board.post.dto;
+package com.example.board.board.dto;
 
-import com.example.board.post.enums.PostStatus;
+import com.example.board.board.enums.PostStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.example.board.post.enums;
+package com.example.board.board.enums;
 
 public enum PostStatus {
     ALL,

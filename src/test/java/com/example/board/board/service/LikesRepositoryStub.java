@@ -1,8 +1,9 @@
-package com.example.board.post.service;
+package com.example.board.board.service;
 
+import com.example.board.board.entity.Post;
 import com.example.board.member.entity.Member;
-import com.example.board.post.entity.PostLikes;
-import com.example.board.post.repository.PostLikesRepository;
+import com.example.board.board.entity.Likes;
+import com.example.board.board.repository.LikesRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,15 +15,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class PostLikesRepositoryStub implements PostLikesRepository {
-    private final List<Optional<PostLikes>> postLikesTable = new ArrayList<>(2);
+public class LikesRepositoryStub implements LikesRepository {
+    private final List<Optional<Likes>> postLikesTable = new ArrayList<>(2);
 
     @Override
-    public long countByPostLikesIdAndMember(Long id, Member member) {
+    public long countLikesByPostAndMember(Post post, Member member) {
         long cnt = 0;
         for (var optional : postLikesTable) {
-            PostLikes postLikes = optional.get();
-            if (postLikes.getPost().getPostId().equals(id) && postLikes.getMember().equals(member)) {
+            Likes likes = optional.get();
+            if (likes.getPost().equals(post) && likes.getMember().equals(member)) {
                 cnt++;
             }
         }
@@ -35,17 +36,17 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public <S extends PostLikes> S saveAndFlush(S entity) {
+    public <S extends Likes> S saveAndFlush(S entity) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> List<S> saveAllAndFlush(Iterable<S> entities) {
+    public <S extends Likes> List<S> saveAllAndFlush(Iterable<S> entities) {
         return null;
     }
 
     @Override
-    public void deleteAllInBatch(Iterable<PostLikes> entities) {
+    public void deleteAllInBatch(Iterable<Likes> entities) {
 
     }
 
@@ -60,60 +61,60 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public PostLikes getOne(Long aLong) {
+    public Likes getOne(Long aLong) {
         return null;
     }
 
     @Override
-    public PostLikes getById(Long aLong) {
+    public Likes getById(Long aLong) {
         return null;
     }
 
     @Override
-    public PostLikes getReferenceById(Long aLong) {
+    public Likes getReferenceById(Long aLong) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> Optional<S> findOne(Example<S> example) {
+    public <S extends Likes> Optional<S> findOne(Example<S> example) {
         return Optional.empty();
     }
 
     @Override
-    public <S extends PostLikes> List<S> findAll(Example<S> example) {
+    public <S extends Likes> List<S> findAll(Example<S> example) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> List<S> findAll(Example<S> example, Sort sort) {
+    public <S extends Likes> List<S> findAll(Example<S> example, Sort sort) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> Page<S> findAll(Example<S> example, Pageable pageable) {
+    public <S extends Likes> Page<S> findAll(Example<S> example, Pageable pageable) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> long count(Example<S> example) {
+    public <S extends Likes> long count(Example<S> example) {
         return 0;
     }
 
     @Override
-    public <S extends PostLikes> boolean exists(Example<S> example) {
+    public <S extends Likes> boolean exists(Example<S> example) {
         return false;
     }
 
     @Override
-    public <S extends PostLikes, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
+    public <S extends Likes, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
         return null;
     }
 
     @Override
-    public <S extends PostLikes> S save(S entity) {
+    public <S extends Likes> S save(S entity) {
         for (var optional : postLikesTable) {
-            PostLikes postLikes = optional.get();
-            if (postLikes.getPostLikesId().equals(entity.getPostLikesId())) {
+            Likes likes = optional.get();
+            if (likes.getLikesId().equals(entity.getLikesId())) {
                 int idx = postLikesTable.indexOf(optional);
                 postLikesTable.set(idx, Optional.of(entity));
                 return null;
@@ -124,15 +125,15 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public <S extends PostLikes> List<S> saveAll(Iterable<S> entities) {
+    public <S extends Likes> List<S> saveAll(Iterable<S> entities) {
         return null;
     }
 
     @Override
-    public Optional<PostLikes> findById(Long aLong) {
+    public Optional<Likes> findById(Long aLong) {
         for (var optional : postLikesTable) {
-            PostLikes postLikes = optional.get();
-            if (postLikes.getPostLikesId().equals(aLong)) {
+            Likes likes = optional.get();
+            if (likes.getLikesId().equals(aLong)) {
                 return optional;
             }
         }
@@ -145,12 +146,12 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public List<PostLikes> findAll() {
+    public List<Likes> findAll() {
         return null;
     }
 
     @Override
-    public List<PostLikes> findAllById(Iterable<Long> longs) {
+    public List<Likes> findAllById(Iterable<Long> longs) {
         return null;
     }
 
@@ -165,7 +166,7 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public void delete(PostLikes entity) {
+    public void delete(Likes entity) {
 
     }
 
@@ -175,7 +176,7 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public void deleteAll(Iterable<? extends PostLikes> entities) {
+    public void deleteAll(Iterable<? extends Likes> entities) {
 
     }
 
@@ -185,12 +186,12 @@ public class PostLikesRepositoryStub implements PostLikesRepository {
     }
 
     @Override
-    public List<PostLikes> findAll(Sort sort) {
+    public List<Likes> findAll(Sort sort) {
         return null;
     }
 
     @Override
-    public Page<PostLikes> findAll(Pageable pageable) {
+    public Page<Likes> findAll(Pageable pageable) {
         return null;
     }
 }

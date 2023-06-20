@@ -1,18 +1,19 @@
-package com.example.board.post.service;
+package com.example.board.board.service;
 
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
-import com.example.board.post.dto.DoPostingModel;
-import com.example.board.post.dto.PostReplyDto;
-import com.example.board.post.entity.Post;
-import com.example.board.post.entity.PostLikes;
-import com.example.board.post.entity.PostReply;
-import com.example.board.post.repository.PostLikesRepository;
-import com.example.board.post.repository.PostReplyRepository;
-import com.example.board.post.repository.PostRepository;
+import com.example.board.board.dto.DeleteReplyDto;
+import com.example.board.board.dto.DoPostingModel;
+import com.example.board.board.dto.PostReplyDto;
+import com.example.board.board.entity.Post;
+import com.example.board.board.entity.Likes;
+import com.example.board.board.entity.Reply;
+import com.example.board.board.repository.LikesRepository;
+import com.example.board.board.repository.ReplyRepository;
+import com.example.board.board.repository.PostRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +23,15 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.example.board.post.enums.PostStatus.DELETED;
+import static com.example.board.board.enums.PostStatus.DELETED;
 
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService {
-    private final PostRepository      postRepository;
-    private final MemberRepository    memberRepository;
-    private final PostLikesRepository postLikesRepository;
-    private final PostReplyRepository postReplyRepository;
+public class BoardServiceImpl implements BoardService {
+    private final PostRepository   postRepository;
+    private final MemberRepository memberRepository;
+    private final LikesRepository  likesRepository;
+    private final ReplyRepository  replyRepository;
 
     @Override
     public ServiceResult doPosting(DoPostingModel doPostingModel) {
@@ -126,7 +127,7 @@ public class PostServiceImpl implements PostService {
             return ServiceResult.fail("존재하지않는 계정입니다.");
         }
         Member member = optionalMember.get();
-        long   count  = postLikesRepository.countByPostLikesIdAndMember(postId, member);
+        long   count  = likesRepository.countLikesByPostAndMember(post, member);
         if (count > 0) {
             return ServiceResult.fail("이미 좋아요한 계정입니다.");
         }
@@ -134,11 +135,11 @@ public class PostServiceImpl implements PostService {
         post.setLikes(post.getLikes() + 1);
         postRepository.save(post);
 
-        PostLikes postLikes = PostLikes.builder()
+        Likes likes = Likes.builder()
                 .member(member)
                 .post(post)
                 .build();
-        postLikesRepository.save(postLikes);
+        likesRepository.save(likes);
         return ServiceResult.success();
     }
 
@@ -165,14 +166,41 @@ public class PostServiceImpl implements PostService {
         if (postReplyDto.getWriter().equals(issuer)) {
             postReplyDto.setWriter("작성자");
         }
-        PostReply postReply = PostReply.builder()
+        Reply reply = Reply.builder()
                 .writer(postReplyDto.getWriter())
                 .replyContents(postReplyDto.getReplyContents())
                 .replyDate(LocalDateTime.now())
                 .build();
 
-        postReplyRepository.save(postReply);
+        replyRepository.save(reply);
 
-        return ServiceResult.success(postReply);
+        return ServiceResult.success(reply);
+    }
+
+    @Override
+    public ServiceResult deleteReply(Long replyId, String token, DeleteReplyDto deleteReplyDto) {
+        Optional<Reply> optionalReply = replyRepository.findById(replyId);
+        if (optionalReply.isEmpty()) {
+            return ServiceResult.fail("댓글이 존재하지않습니다.");
+        }
+        Reply reply = optionalReply.get();
+
+        String           issuer         = JwtUtils.getIssuer(token);
+        Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 계정입니다.");
+        }
+        Member member = optionalMember.get();
+
+        if (!member.getEmail().equals(reply.getWriter())) {
+            return ServiceResult.fail("사용자 정보가 다릅니다.");
+        }
+
+        if (PasswordUtils.isNotEqual(deleteReplyDto.getPassword(), member.getPassword())) {
+            return ServiceResult.fail("비밀번호가 다릅니다.");
+        }
+        reply.setPostReplyStatus(DELETED);
+        replyRepository.save(reply);
+        return ServiceResult.success();
     }
 }

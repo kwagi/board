@@ -1,4 +1,4 @@
-package com.example.board.post.entity;
+package com.example.board.board.entity;
 
 import com.example.board.member.entity.Member;
 import jakarta.persistence.*;
@@ -10,11 +10,11 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class PostLikes {
+public class Likes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_likes_id")
-    private Long postLikesId;
+    @Column(name = "likes_id")
+    private Long likesId;
 
     @ManyToOne
     @JoinColumn(name = "email")

@@ -1,10 +1,8 @@
-package com.example.board.post.entity;
+package com.example.board.board.entity;
 
+import com.example.board.board.enums.PostStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -12,13 +10,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Builder
-public class PostReply {
+public class Reply {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long   postReplyId;
-    private String writer;
+    @Column(name = "reply_id")
+    private Long          replyId;
+    private String        writer;
     private String        replyContents;
+    private PostStatus    postReplyStatus;
     private LocalDateTime replyDate;
 
     @ManyToOne

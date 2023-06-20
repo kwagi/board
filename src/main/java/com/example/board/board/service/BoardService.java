@@ -1,11 +1,12 @@
-package com.example.board.post.service;
+package com.example.board.board.service;
 
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
-import com.example.board.post.dto.DoPostingModel;
-import com.example.board.post.dto.PostReplyDto;
+import com.example.board.board.dto.DeleteReplyDto;
+import com.example.board.board.dto.DoPostingModel;
+import com.example.board.board.dto.PostReplyDto;
 
-public interface PostService {
+public interface BoardService {
     /**
      * Posting 작성
      */
@@ -30,4 +31,9 @@ public interface PostService {
      * 댓글쓰기
      */
     ServiceResult writeReply(Long postId, String token, PostReplyDto postReplyDto);
+
+    /**
+     * 댓글삭제
+     */
+    ServiceResult deleteReply(Long replyId, String token, DeleteReplyDto deleteReplyDto);
 }

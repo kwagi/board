@@ -1,6 +1,6 @@
-package com.example.board.post.entity;
+package com.example.board.board.entity;
 
-import com.example.board.post.enums.PostStatus;
+import com.example.board.board.enums.PostStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
