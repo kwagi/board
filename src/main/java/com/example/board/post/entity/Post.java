@@ -25,5 +25,6 @@ public class Post {
     private PostStatus    postStatus;
     private long          hits;
     private long          likes;
-    private LocalDateTime writtenDate;
+    private LocalDateTime postDate;
+    private LocalDateTime deleteDate;
 }

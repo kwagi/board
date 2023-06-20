@@ -7,9 +7,11 @@ import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.member.service.MemberRepositoryStub;
 import com.example.board.post.dto.DoPostingModel;
+import com.example.board.post.dto.PostReplyDto;
 import com.example.board.post.entity.Post;
 import com.example.board.post.entity.PostLikes;
 import com.example.board.post.repository.PostLikesRepository;
+import com.example.board.post.repository.PostReplyRepository;
 import com.example.board.post.repository.PostRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
@@ -29,14 +31,14 @@ class PostServiceUnitTest {
     private final PostRepository      postRepository      = new PostRepositoryStub();
     private final MemberRepository    memberRepository    = new MemberRepositoryStub();
     private final PostLikesRepository postLikesRepository = new PostLikesRepositoryStub();
-    private final PostService         postService         = new PostServiceImpl(postRepository, memberRepository, postLikesRepository);
+    private final PostReplyRepository postReplyRepository = new PostReplyRepositoryStub();
+    private final PostService         postService         = new PostServiceImpl(postRepository, memberRepository, postLikesRepository, postReplyRepository);
     private       Member              member;
     private       Post                post;
     private       String              token;
 
     @BeforeEach
     void setUp() {
-        // 회원가입시 초기상태
         member = Member.builder()
                 .email("test1234")
                 .password(PasswordUtils.doEncryption("1234"))
@@ -57,7 +59,7 @@ class PostServiceUnitTest {
                 .postStatus(ALL)
                 .hits(0)
                 .likes(0)
-                .writtenDate(LocalDateTime.now())
+                .postDate(LocalDateTime.now())
                 .build();
         postRepository.save(post);
     }
@@ -316,6 +318,85 @@ class PostServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("이미 좋아요한 계정입니다.")
+        );
+    }
+
+    @Test
+    void writeReplySuccessTest() {
+        Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
+        Member           member         = optionalMember.get();
+        member.setMemberStatus(MemberStatus.LOGIN);
+        memberRepository.save(member);
+
+        ServiceResult result = postService.writeReply(1L, token, PostReplyDto.builder()
+                .writer("test1234")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        System.out.println(result.getData());
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void writeReplyFailByPostTest() {
+        ServiceResult result = postService.writeReply(2L, token, PostReplyDto.builder()
+                .writer("test1234")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 게시글입니다.")
+        );
+    }
+
+    @Test
+    void writeReplyFailByDeletedPostTest() {
+        Optional<Post> optionalPost = postRepository.findById(1L);
+        Post           post         = optionalPost.get();
+        post.setPostStatus(DELETED);
+        postRepository.save(post);
+
+        ServiceResult result = postService.writeReply(1L, token, PostReplyDto.builder()
+                .writer("test1234")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 게시글입니다.")
+        );
+    }
+
+    @Test
+    void writeReplyFailByMemberTest() {
+        String newToken = JwtUtils.createToken(Member.builder()
+                .email("aaaa444")
+                .password("14214")
+                .memberStatus(MemberStatus.LOGOUT)
+                .build());
+
+        ServiceResult result = postService.writeReply(1L, newToken, PostReplyDto.builder()
+                .writer("test1234")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void writeReplyFailByUnmatchedMemberTest() {
+        ServiceResult result = postService.writeReply(1L, token, PostReplyDto.builder()
+                .writer("test12345")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("로그인 정보가 다릅니다.")
         );
     }
 }

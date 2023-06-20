@@ -6,9 +6,12 @@ import com.example.board.member.entity.Member;
 import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.post.dto.DoPostingModel;
+import com.example.board.post.dto.PostReplyDto;
 import com.example.board.post.entity.Post;
 import com.example.board.post.entity.PostLikes;
+import com.example.board.post.entity.PostReply;
 import com.example.board.post.repository.PostLikesRepository;
+import com.example.board.post.repository.PostReplyRepository;
 import com.example.board.post.repository.PostRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.example.board.post.enums.PostStatus.DELETED;
@@ -26,6 +30,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository      postRepository;
     private final MemberRepository    memberRepository;
     private final PostLikesRepository postLikesRepository;
+    private final PostReplyRepository postReplyRepository;
 
     @Override
     public ServiceResult doPosting(DoPostingModel doPostingModel) {
@@ -38,10 +43,10 @@ public class PostServiceImpl implements PostService {
             return ServiceResult.fail("삭제된 계정입니다.");
         }
 
-        if (doPostingModel.getTitle() == null || doPostingModel.getTitle().isBlank()) {
+        if (Objects.equals(null, doPostingModel.getTitle()) || doPostingModel.getTitle().isBlank()) {
             return ServiceResult.fail("제목이 비었습니다.");
         }
-        if (doPostingModel.getContents() == null || doPostingModel.getContents().isBlank()) {
+        if (Objects.equals(null, doPostingModel.getContents()) || doPostingModel.getContents().isBlank()) {
             return ServiceResult.fail("내용이 비었습니다.");
         }
         Post post = Post.builder()
@@ -51,15 +56,15 @@ public class PostServiceImpl implements PostService {
                 .postStatus(doPostingModel.getPostStatus())
                 .hits(0)
                 .likes(0)
-                .writtenDate(LocalDateTime.now())
+                .postDate(LocalDateTime.now())
                 .build();
         postRepository.save(post);
         return ServiceResult.success(post);
     }
 
     @Override
-    public ServiceResult clickPost(Long id) {
-        Optional<Post> optionalPost = postRepository.findById(id);
+    public ServiceResult clickPost(Long postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty()) {
             return ServiceResult.fail("존재하지않는 게시글입니다.");
         }
@@ -73,8 +78,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ServiceResult delete(Long id, MemberLogin memberLogin) {
-        Optional<Post> optionalPost = postRepository.findById(id);
+    public ServiceResult delete(Long postId, MemberLogin memberLogin) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty()) {
             return ServiceResult.fail("존재하지않는 게시글입니다.");
         }
@@ -99,13 +104,14 @@ public class PostServiceImpl implements PostService {
             return ServiceResult.fail("비밀번호가 일치하지않습니다.");
         }
         post.setPostStatus(DELETED);
+        post.setDeleteDate(LocalDateTime.now());
         postRepository.save(post);
         return ServiceResult.success();
     }
 
     @Override
-    public ServiceResult clickLikes(Long id, String token) {
-        Optional<Post> optionalPost = postRepository.findById(id);
+    public ServiceResult clickLikes(Long postId, String token) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty()) {
             return ServiceResult.fail("존재하지않는 게시글입니다.");
         }
@@ -120,7 +126,7 @@ public class PostServiceImpl implements PostService {
             return ServiceResult.fail("존재하지않는 계정입니다.");
         }
         Member member = optionalMember.get();
-        long   count  = postLikesRepository.countByPostLikesIdAndMember(id, member);
+        long   count  = postLikesRepository.countByPostLikesIdAndMember(postId, member);
         if (count > 0) {
             return ServiceResult.fail("이미 좋아요한 계정입니다.");
         }
@@ -134,5 +140,39 @@ public class PostServiceImpl implements PostService {
                 .build();
         postLikesRepository.save(postLikes);
         return ServiceResult.success();
+    }
+
+    @Override
+    public ServiceResult writeReply(Long postId, String token, PostReplyDto postReplyDto) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 게시글입니다.");
+        }
+        Post post = optionalPost.get();
+        if (post.getPostStatus().equals(DELETED)) {
+            return ServiceResult.fail("삭제된 게시글입니다.");
+        }
+
+        String           issuer         = JwtUtils.getIssuer(token);
+        Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 계정입니다.");
+        }
+        Member member = optionalMember.get();
+        if (!member.getMemberStatus().equals(MemberStatus.LOGIN)) {
+            return ServiceResult.fail("로그인 정보가 다릅니다.");
+        }
+        if (postReplyDto.getWriter().equals(issuer)) {
+            postReplyDto.setWriter("작성자");
+        }
+        PostReply postReply = PostReply.builder()
+                .writer(postReplyDto.getWriter())
+                .replyContents(postReplyDto.getReplyContents())
+                .replyDate(LocalDateTime.now())
+                .build();
+
+        postReplyRepository.save(postReply);
+
+        return ServiceResult.success(postReply);
     }
 }

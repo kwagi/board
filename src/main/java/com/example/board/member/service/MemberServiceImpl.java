@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -75,7 +76,7 @@ public final class MemberServiceImpl implements MemberService {
 
     @Override
     public ServiceResult logout(String token) {
-        if (token == null || token.isBlank()) {
+        if (Objects.equals(null, token) || token.isBlank()) {
             return ServiceResult.fail("토큰 정보가 없습니다.");
         }
         String issuer;
@@ -115,7 +116,7 @@ public final class MemberServiceImpl implements MemberService {
 
     @Override
     public ServiceResult refresh(String token) {
-        if (token == null || token.isBlank()) {
+        if (Objects.equals(null, token) || token.isBlank()) {
             return ServiceResult.fail("토큰 정보가 없습니다.");
         }
         String issuer;

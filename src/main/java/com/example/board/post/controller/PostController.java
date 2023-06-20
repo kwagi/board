@@ -4,6 +4,7 @@ import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.post.dto.DoPostingModel;
+import com.example.board.post.dto.PostReplyDto;
 import com.example.board.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +21,27 @@ public class PostController {
         return ResponseResult.result(result);
     }
 
-    @PostMapping("/api/post/click-post/{id}")
-    public ResponseEntity<?> clickPost(@PathVariable Long id) {
-        ServiceResult result = postService.clickPost(id);
+    @PostMapping("/api/post/click-post/{postId}")
+    public ResponseEntity<?> clickPost(@PathVariable Long postId) {
+        ServiceResult result = postService.clickPost(postId);
         return ResponseResult.result(result);
     }
 
-    @PostMapping("/api/post/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id, @RequestBody MemberLogin memberLogin) {
-        ServiceResult result = postService.delete(id, memberLogin);
+    @PostMapping("/api/post/delete/{postId}")
+    public ResponseEntity<?> delete(@PathVariable Long postId, @RequestBody MemberLogin memberLogin) {
+        ServiceResult result = postService.delete(postId, memberLogin);
         return ResponseResult.result(result);
     }
 
-    @PostMapping("/api/post/click-likes/{id}")
-    public ResponseEntity<?> clickLikes(@PathVariable Long id, @RequestHeader(name = "TOKEN") String token) {
-        ServiceResult result = postService.clickLikes(id, token);
+    @PostMapping("/api/post/click-likes/{postId}")
+    public ResponseEntity<?> clickLikes(@PathVariable Long postId, @RequestHeader(name = "TOKEN") String token) {
+        ServiceResult result = postService.clickLikes(postId, token);
+        return ResponseResult.result(result);
+    }
+
+    @PostMapping("/api/post/reply/{postId}")
+    public ResponseEntity<?> writeReply(@PathVariable Long postId, @RequestHeader(name = "TOKEN") String token, @RequestBody PostReplyDto postReplyDto) {
+        ServiceResult result = postService.writeReply(postId, token, postReplyDto);
         return ResponseResult.result(result);
     }
 }
