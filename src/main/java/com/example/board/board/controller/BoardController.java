@@ -52,4 +52,10 @@ public class BoardController {
         ServiceResult result = boardService.deleteReply(replyId, token, deleteReplyDto);
         return ResponseResult.result(result);
     }
+
+    @PostMapping("/api/post/write-answer/{replyId}")
+    public ResponseEntity<?> writeAnswer(@PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token, @RequestBody WriteAnswerDto writeAnswerDto) {
+        ServiceResult result = boardService.writeAnswer(replyId, token, writeAnswerDto);
+        return ResponseResult.result(result);
+    }
 }

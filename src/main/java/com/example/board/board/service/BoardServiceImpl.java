@@ -2,6 +2,8 @@ package com.example.board.board.service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.entity.Answer;
+import com.example.board.board.repository.AnswerRepository;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
@@ -25,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.example.board.board.enums.PostStatus.ALL;
 import static com.example.board.board.enums.PostStatus.DELETED;
 
 @Service
@@ -34,6 +37,7 @@ public class BoardServiceImpl implements BoardService {
     private final MemberRepository memberRepository;
     private final LikesRepository  likesRepository;
     private final ReplyRepository  replyRepository;
+    private final AnswerRepository answerRepository;
 
     @Override
     public ServiceResult doPosting(DoPostingModel doPostingModel) {
@@ -221,6 +225,43 @@ public class BoardServiceImpl implements BoardService {
         }
         reply.setPostReplyStatus(DELETED);
         replyRepository.save(reply);
+        return ServiceResult.success();
+    }
+
+    @Override
+    public ServiceResult writeAnswer(Long replyId, String token, WriteAnswerDto writeAnswerDto) {
+        Optional<Reply> optionalReply = replyRepository.findById(replyId);
+        if (optionalReply.isEmpty()) {
+            return ServiceResult.fail("댓글이 존재하지않습니다.");
+        }
+        Reply reply = optionalReply.get();
+        if (reply.getPostReplyStatus().equals(DELETED)) {
+            return ServiceResult.fail("삭제된 댓글입니다.");
+        }
+
+        try {
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
+        }
+
+        String           issuer         = JwtUtils.getIssuer(token);
+        Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 계정입니다.");
+        }
+        Member member = optionalMember.get();
+
+        if (!member.getEmail().equals(writeAnswerDto.getWriter())) {
+            return ServiceResult.fail("사용자 정보가 다릅니다.");
+        }
+        Answer answer = Answer.builder()
+                .writer(writeAnswerDto.getWriter())
+                .answerContents(writeAnswerDto.getAnswerContents())
+                .answerStatus(ALL)
+                .answerDate(LocalDateTime.now())
+                .build();
+        answerRepository.save(answer);
         return ServiceResult.success();
     }
 }

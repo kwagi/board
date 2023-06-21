@@ -1,20 +1,23 @@
 package com.example.board.board.service;
 
 import com.example.board.board.dto.DeleteReplyDto;
+import com.example.board.board.dto.DoPostingModel;
+import com.example.board.board.dto.PostReplyDto;
+import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.entity.Answer;
+import com.example.board.board.entity.Likes;
+import com.example.board.board.entity.Post;
 import com.example.board.board.entity.Reply;
+import com.example.board.board.repository.AnswerRepository;
+import com.example.board.board.repository.LikesRepository;
+import com.example.board.board.repository.PostRepository;
+import com.example.board.board.repository.ReplyRepository;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.member.service.MemberRepositoryStub;
-import com.example.board.board.dto.DoPostingModel;
-import com.example.board.board.dto.PostReplyDto;
-import com.example.board.board.entity.Post;
-import com.example.board.board.entity.Likes;
-import com.example.board.board.repository.LikesRepository;
-import com.example.board.board.repository.ReplyRepository;
-import com.example.board.board.repository.PostRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,11 +38,13 @@ class BoardServiceUnitTest {
     private final MemberRepository memberRepository = new MemberRepositoryStub();
     private final LikesRepository  likesRepository  = new LikesRepositoryStub();
     private final ReplyRepository  replyRepository  = new ReplyRepositoryStub();
-    private final BoardService     boardService     = new BoardServiceImpl(postRepository, memberRepository, likesRepository, replyRepository);
+    private final AnswerRepository answerRepository = new AnswerRepositoryStub();
+    private final BoardService     boardService     = new BoardServiceImpl(postRepository, memberRepository, likesRepository, replyRepository, answerRepository);
+    private       String           token;
     private       Member           member;
     private       Post             post;
-    private       String           token;
     private       Reply            reply;
+    private       Answer           answer;
 
     @BeforeEach
     void setUp() {
@@ -75,6 +80,16 @@ class BoardServiceUnitTest {
                 .post(post)
                 .build();
         replyRepository.save(reply);
+
+        answer = Answer.builder()
+                .answerId(1L)
+                .writer("test1234")
+                .answerContents("내용")
+                .answerStatus(ALL)
+                .answerDate(LocalDateTime.now())
+                .reply(reply)
+                .build();
+        answerRepository.save(answer);
     }
 
     @Test
@@ -489,7 +504,7 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void deleteReplyFailByunMatchedTest() {
+    void deleteReplyFailByUnMatchedTest() {
         Optional<Reply> optionalReply = replyRepository.findById(1L);
         Reply           reply1        = optionalReply.get();
         reply1.setWriter("asdiwetj");
@@ -514,6 +529,90 @@ class BoardServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("비밀번호가 다릅니다.")
+        );
+    }
+
+    @Test
+    void writeAnswerSuccessTest() {
+        ServiceResult result = boardService.writeAnswer(1L, token, WriteAnswerDto.builder()
+                .writer("test1234")
+                .answerContents("답글내용")
+                .build());
+
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void writeAnswerFailByReplyTest() {
+        ServiceResult result = boardService.writeAnswer(2L, token, WriteAnswerDto.builder()
+                .writer("test1234")
+                .answerContents("답글내용")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("댓글이 존재하지않습니다.")
+        );
+    }
+
+    @Test
+    void writeAnswerFailByReplyStatusTest() {
+        Optional<Reply> optionalReply = replyRepository.findById(1L);
+        Reply           reply1        = optionalReply.get();
+        reply1.setPostReplyStatus(DELETED);
+        replyRepository.save(reply1);
+
+        ServiceResult result = boardService.writeAnswer(1L, token, WriteAnswerDto.builder()
+                .writer("test1234")
+                .answerContents("답글내용")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 댓글입니다.")
+        );
+    }
+
+    @Test
+    void writeAnswerFailByTokenTest() {
+        ServiceResult result = boardService.writeAnswer(1L, "asdadsf", WriteAnswerDto.builder()
+                .writer("test1234")
+                .answerContents("답글내용")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void writeAnswerFailByMemberTest() {
+        String token1 = JwtUtils.createToken(Member.builder()
+                .email("tttt")
+                .build());
+
+        ServiceResult result = boardService.writeAnswer(1L, token1, WriteAnswerDto.builder()
+                .writer("test1234")
+                .answerContents("답글내용")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void writeAnswerFailByUnmatchedMemberTest() {
+        ServiceResult result = boardService.writeAnswer(1L, token, WriteAnswerDto.builder()
+                .writer("hi")
+                .answerContents("답글내용")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("사용자 정보가 다릅니다.")
         );
     }
 }

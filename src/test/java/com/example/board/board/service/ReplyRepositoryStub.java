@@ -17,6 +17,19 @@ public class ReplyRepositoryStub implements ReplyRepository {
     private final List<Optional<Reply>> postReplyTable = new ArrayList<>(2);
 
     @Override
+    public <S extends Reply> S save(S entity) {
+        for (var optional : postReplyTable) {
+            if (entity.equals(optional.get())) {
+                int idx = postReplyTable.indexOf(optional);
+                postReplyTable.set(idx, Optional.of(entity));
+                return null;
+            }
+        }
+        postReplyTable.add(Optional.of(entity));
+        return null;
+    }
+
+    @Override
     public void flush() {
 
     }
@@ -93,19 +106,6 @@ public class ReplyRepositoryStub implements ReplyRepository {
 
     @Override
     public <S extends Reply, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
-        return null;
-    }
-
-    @Override
-    public <S extends Reply> S save(S entity) {
-        for (var optional : postReplyTable) {
-            if (entity.equals(optional.get())) {
-                int idx = postReplyTable.indexOf(optional);
-                postReplyTable.set(idx, Optional.of(entity));
-                return null;
-            }
-        }
-        postReplyTable.add(Optional.of(entity));
         return null;
     }
 

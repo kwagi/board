@@ -37,4 +37,9 @@ public interface BoardService {
      * 댓글삭제
      */
     ServiceResult deleteReply(Long replyId, String token, DeleteReplyDto deleteReplyDto);
+
+    /**
+     * 답글쓰기
+     */
+    ServiceResult writeAnswer(Long replyId, String token, WriteAnswerDto writeAnswerDto);
 }
