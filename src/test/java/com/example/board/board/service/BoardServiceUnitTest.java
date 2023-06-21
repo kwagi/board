@@ -306,6 +306,16 @@ class BoardServiceUnitTest {
     }
 
     @Test
+    void clickLikesFailByTokenTest() {
+        String        newToken = "asgdkasdglk";
+        ServiceResult result   = boardService.clickLikes(1L, newToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
     void clickLikesFailByMemberTest() {
         String newToken = JwtUtils.createToken(Member.builder()
                 .email("aaaa444")
@@ -382,6 +392,20 @@ class BoardServiceUnitTest {
     }
 
     @Test
+    void writeReplyFailByTokenTest() {
+        String newToken = "jgadsgj";
+        ServiceResult result = boardService.writeReply(1L, newToken, PostReplyDto.builder()
+                .writer("test1234")
+                .replyContents("첫댓입니다.")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
     void writeReplyFailByMemberTest() {
         String newToken = JwtUtils.createToken(Member.builder()
                 .email("aaaa444")
@@ -431,6 +455,19 @@ class BoardServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("댓글이 존재하지않습니다.")
+        );
+    }
+
+    @Test
+    void deleteReplyFailByTokenTest() {
+        String newToken = "asdg";
+        ServiceResult result = boardService.deleteReply(1L, newToken, DeleteReplyDto.builder()
+                .password("1234")
+                .build());
+
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
         );
     }
 

@@ -8,6 +8,6 @@ import lombok.*;
 @Setter
 @Builder
 public class PostReplyDto {
-    private String writer;
-    private String replyContents;
+    private String     writer;
+    private String     replyContents;
 }

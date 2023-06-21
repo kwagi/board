@@ -159,12 +159,32 @@ class MemberServiceUnitTest {
     }
 
     @Test
-    void logoutFailByWrongTokenTest() {
-        String        curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJxZW1iZXJfaWQiOm51bGwsInN1YiI6InZlcmlmeWluZ-2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg2NzU0MTU5fQ.C6Tn8lZd1uDiamip7hSZEVfTtIccEXoOVEEyS7NbxClru_fq26DJ6IQZU8IZJAt5bvJo8_gtmGARN5h";
+    void logoutFailByInvalidTokenTest() {
+        String        curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6Iu2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg3MzI0NDc3fQ.Pt3fGXvKWwN2Qz6eqLasfla6jmwLrdJ1gGTHNIeOqSzn9XcPoJVYTcYeEVSd6sJ60XdljYE8hvTlE95c5Sa9NQ";
         ServiceResult result   = memberService.logout(curToken);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 잘못되었습니다.")
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void logoutFailByTokenSHATest() {
+        String        curToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJfaWQiOm51bGwsInN1YiI6Iu2Zjeq4uOuPmSIsImlzcyI6InRlc3QxMjM0IiwiZXhwIjoxNjg3MzI0NDc3fQ.AJWFjPQWvKjdjFURxGY7MR--MgOuKGeeApdS_UNmQHg";
+        ServiceResult result   = memberService.logout(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void logoutFailByTokenFormatTest() {
+        String        curToken = "asgd.asdg.gsdg";
+        ServiceResult result   = memberService.logout(curToken);
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
         );
     }
 
@@ -221,7 +241,7 @@ class MemberServiceUnitTest {
 
     @Test
     void refreshSuccessTest() {
-        ServiceResult result = memberService.refresh(this.token);
+        ServiceResult result = memberService.refresh(token);
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
     }
 
@@ -241,7 +261,7 @@ class MemberServiceUnitTest {
         ServiceResult result   = memberService.refresh(curToken);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(result.getData()).isEqualTo("토큰 정보가 잘못되었습니다.")
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
         );
     }
 

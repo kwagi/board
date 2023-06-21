@@ -1,5 +1,6 @@
 package com.example.board.board.controller;
 
+import com.example.board.board.dto.WriteAnswerDto;
 import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
@@ -40,7 +41,7 @@ public class BoardController {
         return ResponseResult.result(result);
     }
 
-    @PostMapping("/api/post/reply/{postId}")
+    @PostMapping("/api/post/write-reply/{postId}")
     public ResponseEntity<?> writeReply(@PathVariable Long postId, @RequestHeader(name = "TOKEN") String token, @RequestBody PostReplyDto postReplyDto) {
         ServiceResult result = boardService.writeReply(postId, token, postReplyDto);
         return ResponseResult.result(result);

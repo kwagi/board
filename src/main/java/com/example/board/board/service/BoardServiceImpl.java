@@ -1,5 +1,7 @@
 package com.example.board.board.service;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.example.board.board.dto.WriteAnswerDto;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
@@ -121,6 +123,12 @@ public class BoardServiceImpl implements BoardService {
             return ServiceResult.fail("삭제된 게시글입니다.");
         }
 
+        try {
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
+        }
+
         String           issuer         = JwtUtils.getIssuer(token);
         Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
         if (optionalMember.isEmpty()) {
@@ -154,6 +162,12 @@ public class BoardServiceImpl implements BoardService {
             return ServiceResult.fail("삭제된 게시글입니다.");
         }
 
+        try {
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
+        }
+
         String           issuer         = JwtUtils.getIssuer(token);
         Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
         if (optionalMember.isEmpty()) {
@@ -184,6 +198,12 @@ public class BoardServiceImpl implements BoardService {
             return ServiceResult.fail("댓글이 존재하지않습니다.");
         }
         Reply reply = optionalReply.get();
+
+        try {
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
+        }
 
         String           issuer         = JwtUtils.getIssuer(token);
         Optional<Member> optionalMember = memberRepository.findByEmail(issuer);

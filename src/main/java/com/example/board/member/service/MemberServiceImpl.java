@@ -1,6 +1,8 @@
 package com.example.board.member.service;
 
+import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberDelete;
@@ -79,15 +81,14 @@ public final class MemberServiceImpl implements MemberService {
         if (Objects.equals(null, token) || token.isBlank()) {
             return ServiceResult.fail("토큰 정보가 없습니다.");
         }
-        String issuer;
 
         try {
-            JwtUtils.getIssuer(token);
-        } catch (SignatureVerificationException | JWTDecodeException e) {
-            return ServiceResult.fail("토큰 정보가 잘못되었습니다.");
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
         }
 
-        issuer = JwtUtils.getIssuer(token);
+        String           issuer         = JwtUtils.getIssuer(token);
         Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("해당 이메일 정보가 없습니다.");
@@ -119,15 +120,14 @@ public final class MemberServiceImpl implements MemberService {
         if (Objects.equals(null, token) || token.isBlank()) {
             return ServiceResult.fail("토큰 정보가 없습니다.");
         }
-        String issuer;
 
         try {
-            JwtUtils.getIssuer(token);
-        } catch (SignatureVerificationException | JWTDecodeException e) {
-            return ServiceResult.fail("토큰 정보가 잘못되었습니다.");
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
         }
 
-        issuer = JwtUtils.getIssuer(token);
+        String           issuer         = JwtUtils.getIssuer(token);
         Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("해당 이메일 정보가 없습니다.");
