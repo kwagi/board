@@ -1,12 +1,9 @@
 package com.example.board.board.controller;
 
-import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.dto.*;
 import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
-import com.example.board.board.dto.DeleteReplyDto;
-import com.example.board.board.dto.DoPostingModel;
-import com.example.board.board.dto.PostReplyDto;
 import com.example.board.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +53,12 @@ public class BoardController {
     @PostMapping("/api/post/write-answer/{replyId}")
     public ResponseEntity<?> writeAnswer(@PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token, @RequestBody WriteAnswerDto writeAnswerDto) {
         ServiceResult result = boardService.writeAnswer(replyId, token, writeAnswerDto);
+        return ResponseResult.result(result);
+    }
+
+    @PostMapping("/api/post/delete-answer/{answerId}")
+    public ResponseEntity<?> deleteAnswer(@PathVariable Long answerId, @RequestHeader(name = "TOKEN") String token, @RequestBody DeleteAnswerDto deleteAnswerDto) {
+        ServiceResult result = boardService.deleteAnswer(answerId, token, deleteAnswerDto);
         return ResponseResult.result(result);
     }
 }

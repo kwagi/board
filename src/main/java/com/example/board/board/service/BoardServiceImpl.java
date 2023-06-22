@@ -1,7 +1,7 @@
 package com.example.board.board.service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.dto.*;
 import com.example.board.board.entity.Answer;
 import com.example.board.board.repository.AnswerRepository;
 import com.example.board.common.ServiceResult;
@@ -9,9 +9,6 @@ import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
-import com.example.board.board.dto.DeleteReplyDto;
-import com.example.board.board.dto.DoPostingModel;
-import com.example.board.board.dto.PostReplyDto;
 import com.example.board.board.entity.Post;
 import com.example.board.board.entity.Likes;
 import com.example.board.board.entity.Reply;
@@ -261,6 +258,37 @@ public class BoardServiceImpl implements BoardService {
                 .answerStatus(ALL)
                 .answerDate(LocalDateTime.now())
                 .build();
+        answerRepository.save(answer);
+        return ServiceResult.success();
+    }
+
+    @Override
+    public ServiceResult deleteAnswer(Long answerId, String token, DeleteAnswerDto deleteAnswerDto) {
+        Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
+        if (optionalAnswer.isEmpty()) {
+            return ServiceResult.fail("답글이 존재하지않습니다.");
+        }
+        Answer answer = optionalAnswer.get();
+        if (answer.getAnswerStatus().equals(DELETED)) {
+            return ServiceResult.fail("삭제된 답글입니다.");
+        }
+
+        try {
+            JwtUtils.verifyToken(token);
+        } catch (JWTVerificationException e) {
+            return ServiceResult.fail("토큰 인증이 잘못되었습니다.");
+        }
+
+        String           issuer         = JwtUtils.getIssuer(token);
+        Optional<Member> optionalMember = memberRepository.findByEmail(issuer);
+        if (optionalMember.isEmpty()) {
+            return ServiceResult.fail("존재하지않는 계정입니다.");
+        }
+        Member member = optionalMember.get();
+        if (PasswordUtils.isNotEqual(deleteAnswerDto.getPassword(), member.getPassword())) {
+            return ServiceResult.fail("비밀번호가 일치하지않습니다.");
+        }
+        answer.setAnswerStatus(DELETED);
         answerRepository.save(answer);
         return ServiceResult.success();
     }

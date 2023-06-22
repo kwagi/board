@@ -17,6 +17,17 @@ public class AnswerRepositoryStub implements AnswerRepository {
     private final List<Optional<Answer>> answerTable = new ArrayList<>(2);
 
     @Override
+    public Optional<Answer> findById(Long aLong) {
+        for (var optional : answerTable) {
+            Answer answer = optional.get();
+            if (answer.getAnswerId().equals(aLong)) {
+                return optional;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public <S extends Answer> S save(S entity) {
         for (var optional : answerTable) {
             if (entity.equals(optional.get())) {
@@ -112,11 +123,6 @@ public class AnswerRepositoryStub implements AnswerRepository {
     @Override
     public <S extends Answer> List<S> saveAll(Iterable<S> entities) {
         return null;
-    }
-
-    @Override
-    public Optional<Answer> findById(Long aLong) {
-        return Optional.empty();
     }
 
     @Override

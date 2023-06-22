@@ -1,9 +1,6 @@
 package com.example.board.board.service;
 
-import com.example.board.board.dto.DeleteReplyDto;
-import com.example.board.board.dto.DoPostingModel;
-import com.example.board.board.dto.PostReplyDto;
-import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.dto.*;
 import com.example.board.board.entity.Answer;
 import com.example.board.board.entity.Likes;
 import com.example.board.board.entity.Post;
@@ -613,6 +610,77 @@ class BoardServiceUnitTest {
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("사용자 정보가 다릅니다.")
+        );
+    }
+
+    @Test
+    void deleteAnswerSuccessTest() {
+        ServiceResult result = boardService.deleteAnswer(1L, token, DeleteAnswerDto.builder()
+                .password("1234")
+                .build());
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    void deleteAnswerFailByReplyTest() {
+        ServiceResult result = boardService.deleteAnswer(2L, token, DeleteAnswerDto.builder()
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("답글이 존재하지않습니다.")
+        );
+    }
+
+    @Test
+    void deleteAnswerFailByStatusTest() {
+        Optional<Answer> optionalAnswer = answerRepository.findById(1L);
+        Answer           answer1        = optionalAnswer.get();
+        answer1.setAnswerStatus(DELETED);
+        answerRepository.save(answer1);
+
+        ServiceResult result = boardService.deleteAnswer(1L, token, DeleteAnswerDto.builder()
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("삭제된 답글입니다.")
+        );
+    }
+
+    @Test
+    void deleteAnswerFailByTokenTest() {
+        ServiceResult result = boardService.deleteAnswer(1L, "sdaf", DeleteAnswerDto.builder()
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("토큰 인증이 잘못되었습니다.")
+        );
+    }
+
+    @Test
+    void deleteAnswerFailByMemberTest() {
+        String token1 = JwtUtils.createToken(Member.builder()
+                .email("tttt")
+                .build());
+        ServiceResult result = boardService.deleteAnswer(1L, token1, DeleteAnswerDto.builder()
+                .password("1234")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
+        );
+    }
+
+    @Test
+    void deleteAnswerFailByPasswordTest() {
+        ServiceResult result = boardService.deleteAnswer(1L, token, DeleteAnswerDto.builder()
+                .password("4321")
+                .build());
+        assertAll(
+                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
+                () -> assertThat(result.getData()).isEqualTo("비밀번호가 일치하지않습니다.")
         );
     }
 }

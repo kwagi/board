@@ -1,11 +1,8 @@
 package com.example.board.board.service;
 
-import com.example.board.board.dto.WriteAnswerDto;
+import com.example.board.board.dto.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
-import com.example.board.board.dto.DeleteReplyDto;
-import com.example.board.board.dto.DoPostingModel;
-import com.example.board.board.dto.PostReplyDto;
 
 public interface BoardService {
     /**
@@ -42,4 +39,9 @@ public interface BoardService {
      * 답글쓰기
      */
     ServiceResult writeAnswer(Long replyId, String token, WriteAnswerDto writeAnswerDto);
+
+    /**
+     * 답글삭제
+     */
+    ServiceResult deleteAnswer(Long answerId, String token, DeleteAnswerDto deleteAnswerDto);
 }
