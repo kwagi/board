@@ -1,13 +1,17 @@
 package com.example.board.board.controller;
 
 import com.example.board.board.dto.*;
+import com.example.board.board.service.BoardService;
 import com.example.board.common.ResponseResult;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
-import com.example.board.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,8 +19,8 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/api/post/do-posting")
-    public ResponseEntity<?> doPosting(@RequestBody DoPostingModel doPostingModel) {
-        ServiceResult result = boardService.doPosting(doPostingModel);
+    public ResponseEntity<?> doPosting(@RequestBody DoPostingModel doPostingModel, List<MultipartFile> images) throws IOException {
+        ServiceResult result = boardService.doPosting(doPostingModel, images);
         return ResponseResult.result(result);
     }
 

@@ -3,12 +3,16 @@ package com.example.board.board.service;
 import com.example.board.board.dto.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 public interface BoardService {
     /**
      * Posting 작성
      */
-    ServiceResult doPosting(DoPostingModel doPostingModel);
+    ServiceResult doPosting(DoPostingModel doPostingModel, List<MultipartFile> images) throws IOException;
 
     /**
      * 게시글 보기

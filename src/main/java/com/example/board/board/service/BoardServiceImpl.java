@@ -2,27 +2,26 @@ package com.example.board.board.service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.board.board.dto.*;
-import com.example.board.board.entity.Answer;
-import com.example.board.board.repository.AnswerRepository;
+import com.example.board.board.entity.*;
+import com.example.board.board.repository.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
 import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
-import com.example.board.board.entity.Post;
-import com.example.board.board.entity.Likes;
-import com.example.board.board.entity.Reply;
-import com.example.board.board.repository.LikesRepository;
-import com.example.board.board.repository.ReplyRepository;
-import com.example.board.board.repository.PostRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.board.board.enums.PostStatus.ALL;
 import static com.example.board.board.enums.PostStatus.DELETED;
@@ -35,9 +34,12 @@ public class BoardServiceImpl implements BoardService {
     private final LikesRepository  likesRepository;
     private final ReplyRepository  replyRepository;
     private final AnswerRepository answerRepository;
+    private final ImageRepository  imageRepository;
 
     @Override
-    public ServiceResult doPosting(DoPostingModel doPostingModel) {
+    public ServiceResult doPosting(DoPostingModel doPostingModel, List<MultipartFile> images) throws IOException {
+        MultipartFile multipartFile = images.get(0);
+        System.out.println(multipartFile.getOriginalFilename());
         Optional<Member> optionalMember = memberRepository.findByEmail(doPostingModel.getPoster());
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("존재하지않는 계정입니다.");
@@ -63,6 +65,18 @@ public class BoardServiceImpl implements BoardService {
                 .postDate(LocalDateTime.now())
                 .build();
         postRepository.save(post);
+
+        if (images.size() > 0) {
+            String imagePath = System.getProperty("user.home") + "/images/";
+            for (var image : images) {
+                String imageName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+                image.transferTo(new File(imagePath + imageName));
+                imageRepository.save(Image.builder()
+                        .imageName(imageName)
+                        .imagePath(imagePath + imageName)
+                        .build());
+            }
+        }
         return ServiceResult.success(post);
     }
 

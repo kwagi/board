@@ -5,10 +5,7 @@ import com.example.board.board.entity.Answer;
 import com.example.board.board.entity.Likes;
 import com.example.board.board.entity.Post;
 import com.example.board.board.entity.Reply;
-import com.example.board.board.repository.AnswerRepository;
-import com.example.board.board.repository.LikesRepository;
-import com.example.board.board.repository.PostRepository;
-import com.example.board.board.repository.ReplyRepository;
+import com.example.board.board.repository.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
 import com.example.board.member.entity.Member;
@@ -20,8 +17,13 @@ import com.example.board.util.PasswordUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.example.board.board.enums.PostStatus.ALL;
@@ -31,17 +33,19 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 class BoardServiceUnitTest {
-    private final PostRepository   postRepository   = new PostRepositoryStub();
-    private final MemberRepository memberRepository = new MemberRepositoryStub();
-    private final LikesRepository  likesRepository  = new LikesRepositoryStub();
-    private final ReplyRepository  replyRepository  = new ReplyRepositoryStub();
-    private final AnswerRepository answerRepository = new AnswerRepositoryStub();
-    private final BoardService     boardService     = new BoardServiceImpl(postRepository, memberRepository, likesRepository, replyRepository, answerRepository);
-    private       String           token;
-    private       Member           member;
-    private       Post             post;
-    private       Reply            reply;
-    private       Answer           answer;
+    private final PostRepository      postRepository   = new PostRepositoryStub();
+    private final MemberRepository    memberRepository = new MemberRepositoryStub();
+    private final LikesRepository     likesRepository  = new LikesRepositoryStub();
+    private final ReplyRepository     replyRepository  = new ReplyRepositoryStub();
+    private final AnswerRepository    answerRepository = new AnswerRepositoryStub();
+    private final ImageRepository     imageRepository  = new ImageRepositoryStub();
+    private final BoardService        boardService     = new BoardServiceImpl(postRepository, memberRepository, likesRepository, replyRepository, answerRepository, imageRepository);
+    private       String              token;
+    private       Member              member;
+    private       Post                post;
+    private       Reply               reply;
+    private       Answer              answer;
+    private       List<MultipartFile> images           = new ArrayList<>(2);
 
     @BeforeEach
     void setUp() {
@@ -87,28 +91,30 @@ class BoardServiceUnitTest {
                 .reply(reply)
                 .build();
         answerRepository.save(answer);
+        byte[] fileContent = "File Content".getBytes();
+        images.add(new MockMultipartFile("file", "filename.txt", "text/plain", fileContent));
     }
 
     @Test
-    void doPostingSuccessTest() {
+    void doPostingSuccessTest() throws IOException {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .contents("내용")
                 .poster("test1234")
                 .postStatus(ALL)
-                .build());
+                .build(), images);
 
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
-    void doPostingFailByMemberTest() {
+    void doPostingFailByMemberTest() throws IOException {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .contents("내용")
                 .poster("gjasdg1424")
                 .postStatus(ALL)
-                .build());
+                .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
@@ -116,8 +122,8 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void doPostingFailByMemberStatusTest() {
-        Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
+    void doPostingFailByMemberStatusTest() throws IOException {
+        Optional<Member>    optionalMember = memberRepository.findByEmail("test1234");
         optionalMember.get().setMemberStatus(MemberStatus.DELETED);
         memberRepository.save(optionalMember.get());
 
@@ -126,7 +132,7 @@ class BoardServiceUnitTest {
                 .contents("내용")
                 .poster("test1234")
                 .postStatus(ALL)
-                .build());
+                .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("삭제된 계정입니다.")
@@ -134,12 +140,12 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void doPostingFailByTitleTest() {
+    void doPostingFailByTitleTest() throws IOException {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .contents("내용")
                 .poster("test1234")
                 .postStatus(ALL)
-                .build());
+                .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("제목이 비었습니다.")
@@ -147,12 +153,12 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void doPostingFailByContentsTest() {
+    void doPostingFailByContentsTest() throws IOException {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .poster("test1234")
                 .postStatus(ALL)
-                .build());
+                .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
                 () -> assertThat(result.getData()).isEqualTo("내용이 비었습니다.")
