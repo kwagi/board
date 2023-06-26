@@ -11,17 +11,18 @@ import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
+import com.fasterxml.jackson.core.FormatSchema;
+import com.fasterxml.jackson.core.PrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.example.board.board.enums.PostStatus.ALL;
 import static com.example.board.board.enums.PostStatus.DELETED;
@@ -92,7 +93,11 @@ public class BoardServiceImpl implements BoardService {
         }
         post.setHits(post.getHits() + 1);
         postRepository.save(post);
-        return ServiceResult.success(post);
+        List<Image>  images = imageRepository.findAllByPost(post);
+        List<Object> list   = new ArrayList<>(2);
+        list.add(post);
+        list.add(images);
+        return ServiceResult.success(list);
     }
 
     @Override

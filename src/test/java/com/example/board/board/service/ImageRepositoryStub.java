@@ -1,6 +1,7 @@
 package com.example.board.board.service;
 
 import com.example.board.board.entity.Image;
+import com.example.board.board.entity.Post;
 import com.example.board.board.repository.ImageRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,11 @@ import java.util.function.Function;
 
 public class ImageRepositoryStub implements ImageRepository {
     private final List<Optional<Image>> imageTable = new ArrayList<>(2);
+
+    @Override
+    public List<Image> findAllByPost(Post post) {
+        return null;
+    }
 
     @Override
     public <S extends Image> S save(S entity) {
