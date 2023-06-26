@@ -1,9 +1,9 @@
 package com.example.board.board.service;
 
-import com.example.board.board.entity.Post;
-import com.example.board.member.entity.Member;
 import com.example.board.board.entity.Likes;
+import com.example.board.board.entity.Post;
 import com.example.board.board.repository.LikesRepository;
+import com.example.board.member.entity.Member;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
