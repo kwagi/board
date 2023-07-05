@@ -10,6 +10,11 @@ import java.util.List;
 
 public interface BoardService {
     /**
+     * Posting 가져오기
+     */
+    ServiceResult getAllPost(int st, int len);
+
+    /**
      * Posting 작성
      */
     ServiceResult doPosting(DoPostingModel doPostingModel, List<MultipartFile> images) throws IOException;

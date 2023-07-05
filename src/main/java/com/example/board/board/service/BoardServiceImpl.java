@@ -3,6 +3,7 @@ package com.example.board.board.service;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.board.board.dto.*;
 import com.example.board.board.entity.*;
+import com.example.board.board.enums.PostStatus;
 import com.example.board.board.repository.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
@@ -12,6 +13,8 @@ import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,9 +37,13 @@ public class BoardServiceImpl implements BoardService {
     private final ImageRepository  imageRepository;
 
     @Override
+    public ServiceResult getAllPost(int st, int len) {
+        Page<Post> post = postRepository.findAllByOrderByPostDateDesc(PageRequest.of(st, len));
+        return ServiceResult.success(post);
+    }
+
+    @Override
     public ServiceResult doPosting(DoPostingModel doPostingModel, List<MultipartFile> images) throws IOException {
-        MultipartFile multipartFile = images.get(0);
-        System.out.println(multipartFile.getOriginalFilename());
         Optional<Member> optionalMember = memberRepository.findByEmail(doPostingModel.getPoster());
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("존재하지않는 계정입니다.");
@@ -56,10 +63,10 @@ public class BoardServiceImpl implements BoardService {
                 .title(doPostingModel.getTitle())
                 .contents(doPostingModel.getContents())
                 .poster(doPostingModel.getPoster())
-                .postStatus(doPostingModel.getPostStatus())
                 .hits(0)
                 .likes(0)
                 .postDate(LocalDateTime.now())
+                .postStatus(ALL)
                 .build();
         postRepository.save(post);
 

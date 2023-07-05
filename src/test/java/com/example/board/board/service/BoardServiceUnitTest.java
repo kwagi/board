@@ -101,7 +101,6 @@ class BoardServiceUnitTest {
                 .title("제목")
                 .contents("내용")
                 .poster("test1234")
-                .postStatus(ALL)
                 .build(), images);
 
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
@@ -113,7 +112,6 @@ class BoardServiceUnitTest {
                 .title("제목")
                 .contents("내용")
                 .poster("gjasdg1424")
-                .postStatus(ALL)
                 .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -123,7 +121,7 @@ class BoardServiceUnitTest {
 
     @Test
     void doPostingFailByMemberStatusTest() throws IOException {
-        Optional<Member>    optionalMember = memberRepository.findByEmail("test1234");
+        Optional<Member> optionalMember = memberRepository.findByEmail("test1234");
         optionalMember.get().setMemberStatus(MemberStatus.DELETED);
         memberRepository.save(optionalMember.get());
 
@@ -131,7 +129,6 @@ class BoardServiceUnitTest {
                 .title("제목")
                 .contents("내용")
                 .poster("test1234")
-                .postStatus(ALL)
                 .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -144,7 +141,6 @@ class BoardServiceUnitTest {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .contents("내용")
                 .poster("test1234")
-                .postStatus(ALL)
                 .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
@@ -157,7 +153,6 @@ class BoardServiceUnitTest {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
                 .title("제목")
                 .poster("test1234")
-                .postStatus(ALL)
                 .build(), images);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),

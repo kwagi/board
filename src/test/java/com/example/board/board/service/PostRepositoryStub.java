@@ -185,4 +185,9 @@ public class PostRepositoryStub implements PostRepository {
     public Page<Post> findAll(Pageable pageable) {
         return null;
     }
+
+    @Override
+    public Page<Post> findAllByOrderByPostDateDesc(Pageable pageable) {
+        return null;
+    }
 }

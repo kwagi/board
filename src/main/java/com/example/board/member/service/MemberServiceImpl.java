@@ -15,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -52,15 +55,12 @@ public final class MemberServiceImpl implements MemberService {
         }
         Member member = optionalMember.get();
 
-        if (member.getMemberStatus().equals(MemberStatus.LOGIN)) {
-            member.setMemberStatus(MemberStatus.LOGOUT);
-            memberRepository.save(member);
-            return ServiceResult.fail("이미 로그인상태이므로 로그아웃합니다.");
-        }
         if (member.getMemberStatus().equals(MemberStatus.DELETED)) {
-            member.setMemberStatus(MemberStatus.LOGOUT);
-            memberRepository.save(member);
             return ServiceResult.fail("삭제된 계정입니다.");
+        }
+
+        if (member.getMemberStatus().equals(MemberStatus.LOGIN)) {
+            return ServiceResult.fail("이미 로그인상태이므로 로그아웃합니다.");
         }
         if (PasswordUtils.isNotEqual(memberLogin.getPassword(), member.getPassword())) {
             return ServiceResult.fail("비밀번호가 일치하지않습니다.");
@@ -69,8 +69,12 @@ public final class MemberServiceImpl implements MemberService {
         member.setMemberStatus(MemberStatus.LOGIN);
         member.setRecentDate(LocalDateTime.now());
         memberRepository.save(member);
-
-        return ServiceResult.success(token);
+        Map<String, String> map = new HashMap<>(4);
+        map.put("email", member.getEmail());
+        map.put("name", member.getName());
+        map.put("regDate", member.getRegDate().format(DateTimeFormatter.ISO_DATE));
+        map.put("token", token);
+        return ServiceResult.success(map);
     }
 
     @Override
@@ -129,8 +133,14 @@ public final class MemberServiceImpl implements MemberService {
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("해당 이메일 정보가 없습니다.");
         }
-        Member member = optionalMember.get();
-        return ServiceResult.success(JwtUtils.createToken(member));
+        Member              member = optionalMember.get();
+        Map<String, String> map    = new HashMap<>(4);
+
+        map.put("email", member.getEmail());
+        map.put("name", member.getName());
+        map.put("regDate", member.getRegDate().format(DateTimeFormatter.ISO_DATE));
+        map.put("token", JwtUtils.createToken(member));
+        return ServiceResult.success(map);
     }
 
     @Override
