@@ -103,7 +103,7 @@ public class BoardServiceImpl implements BoardService {
         postRepository.save(post);
         List<Image>  images      = imageRepository.findAllByPost(post);
         List<Reply>  replies     = replyRepository.findAllByPostAndPostReplyStatus(post, ALL);
-        List<String> imageBase64 = new ArrayList<>(images.size());
+        List<String> imageBase64 = new ArrayList<>();
         images.forEach(e -> {
             try {
                 InputStream imageStream    = new FileInputStream(e.getImagePath());

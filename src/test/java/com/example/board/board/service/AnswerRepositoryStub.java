@@ -2,6 +2,7 @@ package com.example.board.board.service;
 
 import com.example.board.board.entity.Answer;
 import com.example.board.board.entity.Reply;
+import com.example.board.board.enums.PostStatus;
 import com.example.board.board.repository.AnswerRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -16,11 +17,6 @@ import java.util.function.Function;
 
 public class AnswerRepositoryStub implements AnswerRepository {
     private final List<Optional<Answer>> answerTable = new ArrayList<>(2);
-
-    @Override
-    public List<Answer> findAllByReply(Reply reply) {
-        return null;
-    }
 
     @Override
     public Optional<Answer> findById(Long aLong) {
@@ -183,6 +179,11 @@ public class AnswerRepositoryStub implements AnswerRepository {
 
     @Override
     public Page<Answer> findAll(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public List<Answer> findAllByReplyAndAnswerStatus(Reply reply, PostStatus status) {
         return null;
     }
 }

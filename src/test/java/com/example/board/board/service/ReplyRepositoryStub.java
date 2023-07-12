@@ -1,6 +1,8 @@
 package com.example.board.board.service;
 
+import com.example.board.board.entity.Post;
 import com.example.board.board.entity.Reply;
+import com.example.board.board.enums.PostStatus;
 import com.example.board.board.repository.ReplyRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -177,6 +179,11 @@ public class ReplyRepositoryStub implements ReplyRepository {
 
     @Override
     public Page<Reply> findAll(Pageable pageable) {
+        return null;
+    }
+
+    @Override
+    public List<Reply> findAllByPostAndPostReplyStatus(Post post, PostStatus status) {
         return null;
     }
 }

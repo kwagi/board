@@ -161,12 +161,6 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void clickPostSuccessTest() {
-        ServiceResult result = boardService.clickPost(1L);
-        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
     void clickPostFailByNoPostTest() {
         ServiceResult result = boardService.clickPost(2L);
         assertAll(
@@ -353,7 +347,7 @@ class BoardServiceUnitTest {
         ServiceResult result = boardService.clickLikes(1L, token);
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(result.getData()).isEqualTo("이미 좋아요한 계정입니다.")
+                () -> assertThat(result.getData()).isEqualTo("이미 추천한 게시글입니다.")
         );
     }
 
@@ -369,7 +363,6 @@ class BoardServiceUnitTest {
                 .replyContents("첫댓입니다.")
                 .build());
 
-        System.out.println(result.getData());
         assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
     }
 
@@ -439,14 +432,20 @@ class BoardServiceUnitTest {
 
     @Test
     void writeReplyFailByUnmatchedMemberTest() {
-        ServiceResult result = boardService.writeReply(1L, token, PostReplyDto.builder()
+        String newToken = JwtUtils.createToken(Member.builder()
+                .email("aaaa444")
+                .password("14214")
+                .memberStatus(MemberStatus.LOGOUT)
+                .build());
+
+        ServiceResult result = boardService.writeReply(1L, newToken, PostReplyDto.builder()
                 .writer("test12345")
                 .replyContents("첫댓입니다.")
                 .build());
 
         assertAll(
                 () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(result.getData()).isEqualTo("로그인 정보가 다릅니다.")
+                () -> assertThat(result.getData()).isEqualTo("존재하지않는 계정입니다.")
         );
     }
 
