@@ -1,6 +1,7 @@
 package com.example.board.board.service;
 
 import com.example.board.board.entity.Answer;
+import com.example.board.board.entity.Reply;
 import com.example.board.board.repository.AnswerRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,11 @@ import java.util.function.Function;
 
 public class AnswerRepositoryStub implements AnswerRepository {
     private final List<Optional<Answer>> answerTable = new ArrayList<>(2);
+
+    @Override
+    public List<Answer> findAllByReply(Reply reply) {
+        return null;
+    }
 
     @Override
     public Optional<Answer> findById(Long aLong) {

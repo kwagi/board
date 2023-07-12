@@ -3,7 +3,6 @@ package com.example.board.board.service;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.board.board.dto.*;
 import com.example.board.board.entity.*;
-import com.example.board.board.enums.PostStatus;
 import com.example.board.board.repository.*;
 import com.example.board.common.ServiceResult;
 import com.example.board.member.dto.MemberLogin;
@@ -12,14 +11,18 @@ import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -28,6 +31,7 @@ import static com.example.board.board.enums.PostStatus.DELETED;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BoardServiceImpl implements BoardService {
     private final PostRepository   postRepository;
     private final MemberRepository memberRepository;
@@ -37,8 +41,8 @@ public class BoardServiceImpl implements BoardService {
     private final ImageRepository  imageRepository;
 
     @Override
-    public ServiceResult getAllPost(int st, int len) {
-        Page<Post> post = postRepository.findAllByOrderByPostDateDesc(PageRequest.of(st, len));
+    public ServiceResult getAllPost(int page, int size) {
+        Page<Post> post = postRepository.findAllByOrderByPostDateDesc(PageRequest.of(page, size));
         return ServiceResult.success(post);
     }
 
@@ -70,7 +74,7 @@ public class BoardServiceImpl implements BoardService {
                 .build();
         postRepository.save(post);
 
-        if (images.size() > 0) {
+        if (!Objects.equals(images, null)) {
             String imagePath = System.getProperty("user.home") + "/images/";
             for (var image : images) {
                 String imageName = UUID.randomUUID() + "_" + image.getOriginalFilename();
@@ -78,6 +82,7 @@ public class BoardServiceImpl implements BoardService {
                 imageRepository.save(Image.builder()
                         .imageName(imageName)
                         .imagePath(imagePath + imageName)
+                        .post(post)
                         .build());
             }
         }
@@ -96,11 +101,34 @@ public class BoardServiceImpl implements BoardService {
         }
         post.setHits(post.getHits() + 1);
         postRepository.save(post);
-        List<Image>  images = imageRepository.findAllByPost(post);
-        List<Object> list   = new ArrayList<>(2);
-        list.add(post);
-        list.add(images);
-        return ServiceResult.success(list);
+        List<Image>  images      = imageRepository.findAllByPost(post);
+        List<Reply>  replies     = replyRepository.findAllByPostAndPostReplyStatus(post, ALL);
+        List<String> imageBase64 = new ArrayList<>(images.size());
+        images.forEach(e -> {
+            try {
+                InputStream imageStream    = new FileInputStream(e.getImagePath());
+                byte[]      imageByteArray = StreamUtils.copyToByteArray(imageStream); //image to byte-array
+                imageStream.close();
+                String image = Base64.getEncoder().encodeToString(imageByteArray);//byte-array to base64
+                imageBase64.add(image);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        List<List<Answer>> allAnswers = new ArrayList<>(replies.size());
+
+        replies.forEach(reply -> {
+            List<Answer> answers = answerRepository.findAllByReplyAndAnswerStatus(reply, ALL);
+            if (answers.size() != 0) {
+                allAnswers.add(answers);
+            }
+        });
+        Map<String, Object> map = new HashMap<>(4);
+        map.put("post", post);
+        map.put("images", imageBase64);
+        map.put("reply", replies);
+        map.put("answer", allAnswers);
+        return ServiceResult.success(map);
     }
 
     @Override
@@ -160,7 +188,7 @@ public class BoardServiceImpl implements BoardService {
         Member member = optionalMember.get();
         long   count  = likesRepository.countLikesByPostAndMember(post, member);
         if (count > 0) {
-            return ServiceResult.fail("이미 좋아요한 계정입니다.");
+            return ServiceResult.fail("이미 추천한 게시글입니다.");
         }
 
         post.setLikes(post.getLikes() + 1);
@@ -196,21 +224,15 @@ public class BoardServiceImpl implements BoardService {
         if (optionalMember.isEmpty()) {
             return ServiceResult.fail("존재하지않는 계정입니다.");
         }
-        Member member = optionalMember.get();
-        if (!member.getMemberStatus().equals(MemberStatus.LOGIN)) {
-            return ServiceResult.fail("로그인 정보가 다릅니다.");
-        }
-        if (postReplyDto.getWriter().equals(issuer)) {
-            postReplyDto.setWriter("작성자");
-        }
         Reply reply = Reply.builder()
                 .writer(postReplyDto.getWriter())
                 .replyContents(postReplyDto.getReplyContents())
+                .postReplyStatus(ALL)
                 .replyDate(LocalDateTime.now())
+                .post(post)
                 .build();
 
         replyRepository.save(reply);
-
         return ServiceResult.success(reply);
     }
 
@@ -279,6 +301,7 @@ public class BoardServiceImpl implements BoardService {
                 .answerContents(writeAnswerDto.getAnswerContents())
                 .answerStatus(ALL)
                 .answerDate(LocalDateTime.now())
+                .reply(reply)
                 .build();
         answerRepository.save(answer);
         return ServiceResult.success();

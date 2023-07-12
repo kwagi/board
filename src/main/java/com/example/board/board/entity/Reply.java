@@ -19,6 +19,7 @@ public class Reply {
     private Long          replyId;
     private String        writer;
     private String        replyContents;
+    @Enumerated(EnumType.STRING)
     private PostStatus    postReplyStatus;
     private LocalDateTime replyDate;
 

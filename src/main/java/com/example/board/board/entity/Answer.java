@@ -19,6 +19,7 @@ public class Answer {
     private Long          answerId;
     private String        writer;
     private String        answerContents;
+    @Enumerated(EnumType.STRING)
     private PostStatus    answerStatus;
     private LocalDateTime answerDate;
 

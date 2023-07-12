@@ -11,6 +11,7 @@ import com.example.board.member.enums.MemberStatus;
 import com.example.board.member.repository.MemberRepository;
 import com.example.board.util.JwtUtils;
 import com.example.board.util.PasswordUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public final class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
 
@@ -60,6 +62,8 @@ public final class MemberServiceImpl implements MemberService {
         }
 
         if (member.getMemberStatus().equals(MemberStatus.LOGIN)) {
+            member.setMemberStatus(MemberStatus.LOGOUT);
+            memberRepository.save(member);
             return ServiceResult.fail("이미 로그인상태이므로 로그아웃합니다.");
         }
         if (PasswordUtils.isNotEqual(memberLogin.getPassword(), member.getPassword())) {

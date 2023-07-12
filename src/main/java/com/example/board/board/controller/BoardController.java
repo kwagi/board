@@ -24,14 +24,14 @@ import java.util.List;
 public class BoardController {
     private final BoardService boardService;
 
-    @GetMapping("/api/post/")
-    public ResponseEntity<?> getAllPost(@RequestParam int st, @RequestParam int len) {
-        ServiceResult result = boardService.getAllPost(st, len);
+    @PostMapping("/api/post/")
+    public ResponseEntity<?> getAllPost(@RequestParam int page, @RequestParam int size) {
+        ServiceResult result = boardService.getAllPost(page, size);
         return ResponseResult.result(result);
     }
 
     @PostMapping("/api/post/do-posting")
-    public ResponseEntity<?> doPosting(@Valid @RequestParam(name = "data") DoPostingModel doPostingModel, Errors errors, @RequestParam(required = false) List<MultipartFile> images) throws IOException {
+    public ResponseEntity<?> doPosting(@RequestPart(name = "data") @Valid DoPostingModel doPostingModel, Errors errors, @RequestPart(name = "images", required = false) List<MultipartFile> images) throws IOException {
         List<ResponseErrors> responseErrors = new ArrayList<>();
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
@@ -41,7 +41,7 @@ public class BoardController {
         return ResponseResult.result(result);
     }
 
-    @PostMapping("/api/post/click-post/{postId}")
+    @GetMapping("/api/post/{postId}")
     public ResponseEntity<?> clickPost(@PathVariable Long postId) {
         ServiceResult result = boardService.clickPost(postId);
         return ResponseResult.result(result);
@@ -65,7 +65,7 @@ public class BoardController {
     }
 
     @PostMapping("/api/post/write-reply/{postId}")
-    public ResponseEntity<?> writeReply(@RequestBody PostReplyDto postReplyDto, Errors errors, @PathVariable Long postId, @RequestHeader(name = "TOKEN") String token) {
+    public ResponseEntity<?> writeReply(@RequestBody @Valid PostReplyDto postReplyDto, Errors errors, @PathVariable Long postId, @RequestHeader(name = "TOKEN") String token) {
         List<ResponseErrors> responseErrors = new ArrayList<>();
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
@@ -76,7 +76,7 @@ public class BoardController {
     }
 
     @PostMapping("/api/post/reply-delete/{replyId}")
-    public ResponseEntity<?> deleteReply(@RequestBody DeleteReplyDto deleteReplyDto, Errors errors, @PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token) {
+    public ResponseEntity<?> deleteReply(@RequestBody @Valid DeleteReplyDto deleteReplyDto, Errors errors, @PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token) {
         List<ResponseErrors> responseErrors = new ArrayList<>();
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
@@ -87,7 +87,7 @@ public class BoardController {
     }
 
     @PostMapping("/api/post/write-answer/{replyId}")
-    public ResponseEntity<?> writeAnswer(@RequestBody WriteAnswerDto writeAnswerDto, Errors errors, @PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token) {
+    public ResponseEntity<?> writeAnswer(@RequestBody @Valid WriteAnswerDto writeAnswerDto, Errors errors, @PathVariable Long replyId, @RequestHeader(name = "TOKEN") String token) {
         List<ResponseErrors> responseErrors = new ArrayList<>();
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
@@ -98,7 +98,7 @@ public class BoardController {
     }
 
     @PostMapping("/api/post/delete-answer/{answerId}")
-    public ResponseEntity<?> deleteAnswer(@RequestBody DeleteAnswerDto deleteAnswerDto, Errors errors, @PathVariable Long answerId, @RequestHeader(name = "TOKEN") String token) {
+    public ResponseEntity<?> deleteAnswer(@RequestBody @Valid DeleteAnswerDto deleteAnswerDto, Errors errors, @PathVariable Long answerId, @RequestHeader(name = "TOKEN") String token) {
         List<ResponseErrors> responseErrors = new ArrayList<>();
         if (errors.hasErrors()) {
             errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));

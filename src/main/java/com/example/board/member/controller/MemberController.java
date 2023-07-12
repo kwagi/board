@@ -14,10 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +47,7 @@ public final class MemberController {
     }
 
     @PostMapping("/api/member/logout")
-    public ResponseEntity<?> logout(@RequestHeader(name = "TOKEN") @Valid String token, Errors errors) {
-        List<ResponseErrors> responseErrors = new ArrayList<>();
-        if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
-            return new ResponseEntity<>(responseErrors, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<?> logout(@RequestHeader(name = "TOKEN") @Valid String token) {
         ServiceResult result = memberService.logout(token);
         return ResponseResult.result(result);
     }
@@ -72,12 +64,7 @@ public final class MemberController {
     }
 
     @PostMapping("/api/member/refresh")
-    public ResponseEntity<?> delete(@RequestHeader(name = "TOKEN") @Valid String token, Errors errors) {
-        List<ResponseErrors> responseErrors = new ArrayList<>();
-        if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(e -> responseErrors.add(ResponseErrors.of((FieldError) e)));
-            return new ResponseEntity<>(responseErrors, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<?> delete(@RequestHeader(name = "TOKEN") String token) {
         ServiceResult result = memberService.refresh(token);
         return ResponseResult.result(result);
     }

@@ -12,7 +12,7 @@ public interface BoardService {
     /**
      * Posting 가져오기
      */
-    ServiceResult getAllPost(int st, int len);
+    ServiceResult getAllPost(int page, int size);
 
     /**
      * Posting 작성
