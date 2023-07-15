@@ -24,7 +24,7 @@ import java.util.List;
 public class BoardController {
     private final BoardService boardService;
 
-    @PostMapping("/api/post")
+    @GetMapping("/api/post")
     public ResponseEntity<?> getAllPost(@RequestParam int page, @RequestParam int size) {
         ServiceResult result = boardService.getAllPost(page, size);
         return ResponseResult.result(result);

@@ -8,7 +8,7 @@ ENV SPRING_DATASOURCE_USERNAME=${spring_datasource_username}
 ENV SPRING_DATASOURCE_PASSWORD=${spring_datasource_password}
 CMD ["./gradlew","clean","build"]
 ARG JAR_FILE=./build/libs/board-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} spring.jar
+COPY ["${JAR_FILE}","spring.jar"]
 # VOLUME과의 차이점 인지
 RUN ["mkdir","/root/images"]
 ENTRYPOINT ["java", "-jar","-Duser.timezone=Asia/Seoul","spring.jar"]
