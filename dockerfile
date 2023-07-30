@@ -1,14 +1,10 @@
 FROM khipu/openjdk17-alpine
-# VOLUME /root/images
-ARG spring_datasource_url
-ARG spring_datasource_username
-ARG spring_datasource_password
-ENV SPRING_DATASOURCE_URL=${spring_datasource_url}
-ENV SPRING_DATASOURCE_USERNAME=${spring_datasource_username}
-ENV SPRING_DATASOURCE_PASSWORD=${spring_datasource_password}
-CMD ["./gradlew","clean","build"]
+CMD ./gradlew clean build
 ARG JAR_FILE=./build/libs/board-0.0.1-SNAPSHOT.jar
 COPY ["${JAR_FILE}","spring.jar"]
-# VOLUME과의 차이점 인지
-RUN ["mkdir","/root/images"]
-ENTRYPOINT ["java", "-jar","-Duser.timezone=Asia/Seoul","spring.jar"]
+RUN mkdir /root/images
+ENTRYPOINT java -jar -Duser.timezone=Asia/Seoul spring.jar
+#README
+# 민감한 정보는 dockerfile에 기입X
+# build-time말고 run-time에 주입받도록 해야함
+# run --mount=type=secret,id=myscret 은 영속성이없는 일회성 작업(git clone, ssh연결 등)에만 쓰임.
