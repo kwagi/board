@@ -17,6 +17,36 @@ public class PostRepositoryStub implements PostRepository {
     private final List<Optional<Post>> postTable = new ArrayList<>(2);
 
     @Override
+    public <S extends Post> S save(S entity) {
+        if (postTable.isEmpty() || entity.getPostId() == null) {
+            entity.setPostId(postTable.size() + 1L);
+            postTable.add(Optional.of(entity));
+            return null;
+        }
+
+        for (Optional<Post> optionalPost : postTable) {
+            if (entity.getPostId().equals(optionalPost.get().getPostId())) {
+                int idx = postTable.indexOf(optionalPost);
+                postTable.set(idx, Optional.of(entity));
+                return null;
+            }
+        }
+        entity.setPostId(postTable.size() + 1L);
+        postTable.add(Optional.of(entity));
+        return null;
+    }
+
+    @Override
+    public Optional<Post> findById(Long aLong) {
+        for (Optional<Post> optionalPost : postTable) {
+            if (optionalPost.get().getPostId().equals(aLong)) {
+                return optionalPost;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public void flush() {
 
     }
@@ -97,38 +127,8 @@ public class PostRepositoryStub implements PostRepository {
     }
 
     @Override
-    public <S extends Post> S save(S entity) {
-        if (postTable.size() == 0 || entity.getPostId() == null) {
-            entity.setPostId(postTable.size() + 1L);
-            postTable.add(Optional.of(entity));
-            return null;
-        }
-
-        for (Optional<Post> optionalPost : postTable) {
-            if (entity.getPostId().equals(optionalPost.get().getPostId())) {
-                int idx = postTable.indexOf(optionalPost);
-                postTable.set(idx, Optional.of(entity));
-                return null;
-            }
-        }
-        entity.setPostId(postTable.size() + 1L);
-        postTable.add(Optional.of(entity));
-        return null;
-    }
-
-    @Override
     public <S extends Post> List<S> saveAll(Iterable<S> entities) {
         return null;
-    }
-
-    @Override
-    public Optional<Post> findById(Long aLong) {
-        for (Optional<Post> optionalPost : postTable) {
-            if (optionalPost.get().getPostId().equals(aLong)) {
-                return optionalPost;
-            }
-        }
-        return Optional.empty();
     }
 
     @Override

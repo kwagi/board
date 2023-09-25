@@ -96,6 +96,23 @@ erDiagram
     reply ||--|{ answer: ""
 ```
 
+# 2-2. class 의존성
+
+```mermaid
+flowchart BT
+    BoardService --> AnswerRepository
+    BoardServiceImpl -.-> BoardService
+    BoardService --> ImageRepository
+    BoardService --> LikesRepository
+    BoardService --> PostRepository
+    BoardService --> ReplyRepository
+    BoardService --> MemberRepository
+    BoardController --> BoardService
+    MemberService --> MemberRepository
+    MemberController --> MemberService
+    MemberServiceImpl -.-> MemberService
+```
+
 # 3. 테스트
 
 JUnit5를 활용한 단위테스트를 했습니다.

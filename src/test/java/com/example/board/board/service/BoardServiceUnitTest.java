@@ -161,6 +161,12 @@ class BoardServiceUnitTest {
     }
 
     @Test
+    void clickPostSuccess() {
+        ServiceResult result = boardService.clickPost(1L);
+        assertThat(result.getStatus()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
     void clickPostFailByNoPostTest() {
         ServiceResult result = boardService.clickPost(2L);
         assertAll(

@@ -115,14 +115,19 @@ public class BoardServiceImpl implements BoardService {
                 throw new RuntimeException(ex);
             }
         });
-        List<List<Answer>> allAnswers = new ArrayList<>(replies.size());
+        List<List<Answer>> allAnswers;
 
-        replies.forEach(reply -> {
-            List<Answer> answers = answerRepository.findAllByReplyAndAnswerStatus(reply, ALL);
-            if (answers.size() != 0) {
-                allAnswers.add(answers);
-            }
-        });
+        if (!Objects.equals(replies, null)) {
+            allAnswers = new ArrayList<>(replies.size());
+            replies.forEach(reply -> {
+                List<Answer> answers = answerRepository.findAllByReplyAndAnswerStatus(reply, ALL);
+                if (!answers.isEmpty()) {
+                    allAnswers.add(answers);
+                }
+            });
+        } else {
+            allAnswers = null;
+        }
         Map<String, Object> map = new HashMap<>(4);
         map.put("post", post);
         map.put("images", imageBase64);

@@ -19,7 +19,14 @@ public class ImageRepositoryStub implements ImageRepository {
 
     @Override
     public List<Image> findAllByPost(Post post) {
-        return null;
+        List<Image> images = new ArrayList<>(imageTable.size());
+        imageTable.forEach(e -> {
+            Image image = e.get();
+            if (post.equals(image.getPost())) {
+                images.add(image);
+            }
+        });
+        return images;
     }
 
     @Override

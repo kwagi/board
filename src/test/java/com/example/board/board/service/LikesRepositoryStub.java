@@ -19,6 +19,31 @@ public class LikesRepositoryStub implements LikesRepository {
     private final List<Optional<Likes>> postLikesTable = new ArrayList<>(2);
 
     @Override
+    public Optional<Likes> findById(Long aLong) {
+        for (var optional : postLikesTable) {
+            Likes likes = optional.get();
+            if (likes.getLikesId().equals(aLong)) {
+                return optional;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public <S extends Likes> S save(S entity) {
+        for (var optional : postLikesTable) {
+            Likes likes = optional.get();
+            if (likes.getLikesId().equals(entity.getLikesId())) {
+                int idx = postLikesTable.indexOf(optional);
+                postLikesTable.set(idx, Optional.of(entity));
+                return null;
+            }
+        }
+        postLikesTable.add(Optional.of(entity));
+        return null;
+    }
+
+    @Override
     public long countLikesByPostAndMember(Post post, Member member) {
         long cnt = 0;
         for (var optional : postLikesTable) {
@@ -111,33 +136,8 @@ public class LikesRepositoryStub implements LikesRepository {
     }
 
     @Override
-    public <S extends Likes> S save(S entity) {
-        for (var optional : postLikesTable) {
-            Likes likes = optional.get();
-            if (likes.getLikesId().equals(entity.getLikesId())) {
-                int idx = postLikesTable.indexOf(optional);
-                postLikesTable.set(idx, Optional.of(entity));
-                return null;
-            }
-        }
-        postLikesTable.add(Optional.of(entity));
-        return null;
-    }
-
-    @Override
     public <S extends Likes> List<S> saveAll(Iterable<S> entities) {
         return null;
-    }
-
-    @Override
-    public Optional<Likes> findById(Long aLong) {
-        for (var optional : postLikesTable) {
-            Likes likes = optional.get();
-            if (likes.getLikesId().equals(aLong)) {
-                return optional;
-            }
-        }
-        return Optional.empty();
     }
 
     @Override

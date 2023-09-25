@@ -19,6 +19,17 @@ public class ReplyRepositoryStub implements ReplyRepository {
     private final List<Optional<Reply>> postReplyTable = new ArrayList<>(2);
 
     @Override
+    public Optional<Reply> findById(Long aLong) {
+        for (var optional : postReplyTable) {
+            Reply reply = optional.get();
+            if (reply.getReplyId().equals(aLong)) {
+                return optional;
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public <S extends Reply> S save(S entity) {
         for (var optional : postReplyTable) {
             if (entity.equals(optional.get())) {
@@ -114,17 +125,6 @@ public class ReplyRepositoryStub implements ReplyRepository {
     @Override
     public <S extends Reply> List<S> saveAll(Iterable<S> entities) {
         return null;
-    }
-
-    @Override
-    public Optional<Reply> findById(Long aLong) {
-        for (var optional : postReplyTable) {
-            Reply reply = optional.get();
-            if (reply.getReplyId().equals(aLong)) {
-                return optional;
-            }
-        }
-        return Optional.empty();
     }
 
     @Override
