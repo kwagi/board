@@ -113,6 +113,27 @@ flowchart BT
     MemberServiceImpl -.-> MemberService
 ```
 
+# 2-3. 간단한 구동화면
+
+- 첫화면
+  <img src="capture/1.png">
+- 회원가입
+  <img src="capture/2.png">
+- 회원가입 검증
+  <img src="capture/3.png">
+- 로그인 검증
+  <img src="capture/4.png">
+- 포스팅 화면
+  <img src="capture/5.png">
+- 포스팅 목록
+  <img src="capture/6.png">
+- 글 내용
+  <img src="capture/7.png">
+- 중복추천 검증
+  <img src="capture/8.png">
+- 최종 글 목록들
+  <img src="capture/9.png">
+
 # 3. 테스트
 
 JUnit5를 활용한 단위테스트를 했습니다.
