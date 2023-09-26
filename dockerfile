@@ -1,7 +1,7 @@
 FROM khipu/openjdk17-alpine
-CMD ./gradlew clean build
+CMD [".gradlew", "clean", "build"]
 ARG JAR_FILE=./build/libs/board-0.0.1-SNAPSHOT.jar
-COPY ["${JAR_FILE}","spring.jar"]
+COPY ${JAR_FILE} "spring.jar"
 RUN mkdir /root/images
 ENTRYPOINT java -jar -Duser.timezone=Asia/Seoul spring.jar
 #README.md
