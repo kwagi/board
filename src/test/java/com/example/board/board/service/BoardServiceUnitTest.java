@@ -607,19 +607,6 @@ class BoardServiceUnitTest {
     }
 
     @Test
-    void writeAnswerFailByUnmatchedMemberTest() {
-        ServiceResult result = boardService.writeAnswer(1L, token, WriteAnswerDto.builder()
-                .writer("hi")
-                .answerContents("답글내용")
-                .build());
-
-        assertAll(
-                () -> assertThat(result.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST),
-                () -> assertThat(result.getData()).isEqualTo("사용자 정보가 다릅니다.")
-        );
-    }
-
-    @Test
     void deleteAnswerSuccessTest() {
         ServiceResult result = boardService.deleteAnswer(1L, token, DeleteAnswerDto.builder()
                 .password("1234")

@@ -298,9 +298,9 @@ public class BoardServiceImpl implements BoardService {
         }
         Member member = optionalMember.get();
 
-        if (!member.getEmail().equals(writeAnswerDto.getWriter())) {
-            return ServiceResult.fail("사용자 정보가 다릅니다.");
-        }
+//        if (!member.getEmail().equals(writeAnswerDto.getWriter())) {
+//            return ServiceResult.fail("사용자 정보가 다릅니다.");
+//        }
         Answer answer = Answer.builder()
                 .writer(writeAnswerDto.getWriter())
                 .answerContents(writeAnswerDto.getAnswerContents())
