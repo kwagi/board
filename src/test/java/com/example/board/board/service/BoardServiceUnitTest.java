@@ -95,6 +95,7 @@ class BoardServiceUnitTest {
         images.add(new MockMultipartFile("file", "filename.txt", "text/plain", fileContent));
     }
 
+    //     "$HOME/images" must exist.
     @Test
     void doPostingSuccessTest() throws IOException {
         ServiceResult result = boardService.doPosting(DoPostingModel.builder()
